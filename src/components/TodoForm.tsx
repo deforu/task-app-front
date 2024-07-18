@@ -21,7 +21,7 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
       const res = await createTodo(data)
       console.log(res)
 
-      if (res.status == 200) {
+      if (res.status === 200) {
         setTodos([...todos, res.data.todo])
       } else {
         console.log(res.data.message)
