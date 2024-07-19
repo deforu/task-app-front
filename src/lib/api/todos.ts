@@ -15,3 +15,7 @@ export const createTodo = (data: Todo) => {
 export const deleteTodo = (id: number) => {
   return client.delete(`/todos/${id}`)
 }
+
+export const updateTodo = async (id: number, data: { title: string }) => {
+  return await client.put(`/todos/${id}`, data);
+};
