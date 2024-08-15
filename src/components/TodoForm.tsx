@@ -34,15 +34,26 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   }
 
   return (
-    <form onSubmit={handleCreateTodo}>
+    <form
+      onSubmit={handleCreateTodo}
+      className="fixed top-100% left-10% w-full p-4 bg-white shadow-md z-10"
+    >
+      <div className="mb-4">
+        <input
+          type="text"
+          value={title}
+          className="w-80 p-2 border border-blue-300 rounded"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setTitle(e.target.value)
+          }}
+        />
+      </div>
       <input
-        type="text"
-        value={title}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          setTitle(e.target.value)
-        }}
+        type="submit"
+        value="Add"
+        disabled={!title}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
       />
-      <input type="submit" value="Add" disabled={!title} />
     </form>
   )
 }

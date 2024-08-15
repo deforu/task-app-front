@@ -57,13 +57,13 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
           todo.title
         )}
       </td>
-      <td>
+      <td >
         {isEditing ? (
-          <button onClick={handleUpdateTodo}>Update</button>
+          <button className="text-blue-500 hover:text-blue-700 mr-2" onClick={handleUpdateTodo}>更新</button>
         ) : (
-          <button onClick={() => setIsEditing(true)}>Edit</button>
+          <button className="text-blue-500 hover:text-blue-700 mr-2" onClick={() => setIsEditing(true)}>編集</button>
         )}
-        <button onClick={() => handleDeleteTodo(todo.id as number)}>Delete</button>
+        <button className="text-red-500 hover:text-red-700" onClick={() => handleDeleteTodo(todo.id as number)}>削除</button>
       </td>
     </tr>
   )
