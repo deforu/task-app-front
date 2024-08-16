@@ -10,41 +10,41 @@ function Sidebar() {
             placeholder="検索"
             className="w-full p-2 rounded bg-white hover:bg-gray-200 transition-colors"
           />
+          <ul className="w-full mt-4 mb-4 space-y-2">
+            <li>
+              <a
+                href="#"
+                className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
+              >
+                すべてのタスク
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
+              >
+                今日の予定
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
+              >
+                重要
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
+              >
+                完了済み
+              </a>
+            </li>
+          </ul>
         </div>
-        <ul className="fixed mt-16 mb-4 space-y-2">
-          <li>
-            <a
-              href="#"
-              className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
-            >
-              すべてのタスク
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
-            >
-              今日の予定
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
-            >
-              重要
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center text-gray-700 hover:bg-blue-200 p-2 rounded transition-colors"
-            >
-              完了済み
-            </a>
-          </li>
-        </ul>
       </div>
     </aside>
   );

@@ -39,8 +39,14 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
       <div className="w-full max-w-2xl p-4">
         <form
           onSubmit={handleCreateTodo}
-          className="bg-white shadow-md rounded-lg"
+          className="flex space-x-4 bg-white rounded-lg "
         >
+          <input
+            type="submit"
+            value="追加"
+            disabled={!title}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
+          />
           <input
             type="text"
             value={title}
