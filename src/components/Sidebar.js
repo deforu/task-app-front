@@ -4,14 +4,14 @@ function Sidebar() {
   return (
     <aside className="w-60 bg-blue-100 p-4 shadow-md z-10">
       <div className="sticky top-4">
-        <div className="mb-4">
+        <div className="fixed mb-4">
           <input
             type="search"
             placeholder="検索"
             className="w-full p-2 rounded bg-white hover:bg-gray-200 transition-colors"
           />
         </div>
-        <ul className="mb-4 space-y-2">
+        <ul className="fixed mt-16 mb-4 space-y-2">
           <li>
             <a
               href="#"
