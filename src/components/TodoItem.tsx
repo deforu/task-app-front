@@ -59,7 +59,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
       </td>
       <td >
         {isEditing ? (
-          <button className="text-blue-500 hover:text-blue-700 mr-2" onClick={handleUpdateTodo}>更新</button>
+          <button className="text-blue-500 hover:text-blue-700 mr-2 " onClick={handleUpdateTodo}>保存</button>
         ) : (
           <button className="text-blue-500 hover:text-blue-700 mr-2" onClick={() => setIsEditing(true)}>編集</button>
         )}

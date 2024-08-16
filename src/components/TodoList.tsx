@@ -40,14 +40,14 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
           <div>
             {editingId === todo.id ? (
               <button
-                className="text-blue-500 hover:text-blue-700 mr-2"
+                className="text-blue-500 hover:text-blue-700 mr-10"
                 onClick={() => handleUpdateTodo(todo.id as number)}
               >
                 保存
               </button>
             ) : (
               <button
-                className="text-blue-500 hover:text-blue-700 mr-2"
+                className="text-blue-500 hover:text-blue-700 mr-10"
                 onClick={() => {
                   setEditingId(todo.id as number)
                   setUpdatedTitle(todo.title)
