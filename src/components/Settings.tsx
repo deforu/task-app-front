@@ -1,4 +1,3 @@
-// components/Settings.tsx
 import React, { useState, useEffect } from "react";
 
 const Settings: React.FC = () => {
@@ -20,10 +19,10 @@ const Settings: React.FC = () => {
   const saveSettings = () => {
     const settings = { theme, fontSize, notifications };
     localStorage.setItem("userSettings", JSON.stringify(settings));
-    // Here you would typically update the app's global state or context
+
     document.body.className = theme;
     setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000); // Reset after 2 seconds
+    setTimeout(() => setIsSaved(false), 2000);
   };
 
   return (
