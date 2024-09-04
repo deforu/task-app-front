@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 const Profile: React.FC = () => {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("userProfile");
@@ -27,7 +28,8 @@ const Profile: React.FC = () => {
   const saveProfile = () => {
     const profile = { name, image };
     localStorage.setItem("userProfile", JSON.stringify(profile));
-    // Here you would typically update the app's global state or context
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000);
   };
 
   return (
@@ -61,10 +63,18 @@ const Profile: React.FC = () => {
         </div>
         <button
           onClick={saveProfile}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className={`bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${
+            isSaved ? "bg-green-500" : ""
+          }`}
         >
-          プロフィールを保存
+          {isSaved ? "保存しました！" : "プロフィールを保存"}
         </button>
+        {isSaved && (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+          </span>
+        )}
       </div>
     </div>
   );

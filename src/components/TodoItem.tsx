@@ -10,8 +10,8 @@ interface TodoItemProps {
 export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(todo.title);
-  const [dueDate, setDueDate] = useState(todo.due_date || ""); // 修正: due_dateに変更
-  const [isImportant, setIsImportant] = useState(todo.is_important); // 修正: is_importantに変更
+  const [dueDate, setDueDate] = useState(todo.due_date || "");
+  const [isImportant, setIsImportant] = useState(todo.is_important);
 
   const handleDeleteTodo = async (id: number) => {
     try {
@@ -31,8 +31,8 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
       const updatedTodo = {
         ...todo,
         title: title.trim(),
-        due_date: dueDate, // 修正: due_dateに変更
-        is_important: isImportant, // 修正: is_importantに変更
+        due_date: dueDate,
+        is_important: isImportant,
       };
       const res = await updateTodo(todo.id as number, updatedTodo);
       if (res?.status === 200) {
@@ -66,7 +66,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
 
   const toggleImportant = async () => {
     try {
-      const updatedTodo = { ...todo, is_important: !isImportant }; // 修正: is_importantに変更
+      const updatedTodo = { ...todo, is_important: !isImportant };
       const res = await updateTodo(todo.id as number, updatedTodo);
       if (res?.status === 200) {
         setTodos((prev: Todo[]) =>
@@ -103,7 +103,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
           <span
             className={`${todo.completed ? "line-through text-gray-500" : ""} ${
               todo.is_important ? "font-bold text-blue-500" : ""
-            }`} // 修正: is_importantに変更
+            }`}
           >
             {todo.title}
           </span>
@@ -118,7 +118,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
             className="border rounded-lg p-2"
           />
         ) : (
-          todo.due_date // 修正: due_dateに変更
+          todo.due_date
         )}
       </td>
       <td className="py-2 px-4">

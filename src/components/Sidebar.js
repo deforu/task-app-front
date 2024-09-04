@@ -1,117 +1,125 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import { Todo } from "../interfaces/index";
+import { Search } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidebarProps {
   todos: Todo[];
   setFilteredTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+  searchTerm: string;
+  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function Sidebar({ todos, setFilteredTodos }: SidebarProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+export const Sidebar: React.FC<SidebarProps> = ({
+  todos,
+  setFilteredTodos,
+  searchTerm,
+  setSearchTerm,
+  setIsMenuOpen,
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const filterTodos = useCallback(
-    (filter: string) => {
-      let filteredTodos = todos;
+  const filterTodos = (filter: string) => {
+    let filteredTodos = todos;
 
-      // Apply filter
-      switch (filter) {
-        case "today":
-          const today = new Date().toISOString().split("T")[0];
-          filteredTodos = todos.filter((todo) => todo.due_date === today);
-          break;
-        case "important":
-          filteredTodos = todos.filter((todo) => todo.is_important);
-          break;
-        case "completed":
-          filteredTodos = todos.filter((todo) => todo.completed);
-          break;
-        default:
-          break;
-      }
+    switch (filter) {
+      case "today":
+        const today = new Date().toISOString().split("T")[0];
+        filteredTodos = todos.filter((todo) => todo.due_date === today);
+        break;
+      case "important":
+        filteredTodos = todos.filter((todo) => todo.is_important);
+        break;
+      case "completed":
+        filteredTodos = todos.filter((todo) => todo.completed);
+        break;
+      default:
+        break;
+    }
 
-      // Apply search
-      if (searchTerm) {
-        filteredTodos = filteredTodos.filter((todo) =>
-          todo.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
+    if (searchTerm) {
+      filteredTodos = filteredTodos.filter((todo) =>
+        todo.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-      setFilteredTodos(filteredTodos);
-      setActiveFilter(filter);
-    },
-    [todos, searchTerm, setFilteredTodos]
-  );
+    setFilteredTodos(filteredTodos);
+    setIsMenuOpen(false);
+  };
 
   useEffect(() => {
-    filterTodos(activeFilter);
-  }, [todos, activeFilter, searchTerm, filterTodos]);
+    const params = new URLSearchParams(location.search);
+    const filter = params.get("filter") || "all";
+    filterTodos(filter);
+  }, [location.search, todos, searchTerm]);
+
+  const handleFilterClick = (filter: string) => {
+    navigate(`/?filter=${filter}`);
+  };
+
+  const getButtonClass = (filter: string) => {
+    const params = new URLSearchParams(location.search);
+    const activeFilter = params.get("filter") || "all";
+    return `flex items-center w-full text-left ${
+      activeFilter === filter
+        ? "bg-blue-200 text-blue-700"
+        : "text-gray-700 hover:bg-blue-200"
+    } p-2 rounded transition-colors`;
+  };
 
   return (
-    <aside className="w-60 bg-blue-100 p-4 shadow-md z-10">
-      <div className="sticky top-4">
-        <div className="mb-4">
+    <div className="p-4">
+      <div className="hidden md:block mb-4">
+        <div className="relative">
           <input
             type="search"
             placeholder="検索"
-            className="w-full p-2 rounded bg-white hover:bg-gray-200 transition-colors"
+            className="w-full p-2 pr-8 rounded bg-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <ul className="w-full mt-4 mb-4 space-y-2">
-            <li>
-              <button
-                onClick={() => filterTodos("all")}
-                className={`flex items-center w-full text-left ${
-                  activeFilter === "all"
-                    ? "bg-blue-200 text-blue-700"
-                    : "text-gray-700 hover:bg-blue-200"
-                } p-2 rounded transition-colors`}
-              >
-                すべてのタスク
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => filterTodos("today")}
-                className={`flex items-center w-full text-left ${
-                  activeFilter === "today"
-                    ? "bg-blue-200 text-blue-700"
-                    : "text-gray-700 hover:bg-blue-200"
-                } p-2 rounded transition-colors`}
-              >
-                今日の予定
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => filterTodos("important")}
-                className={`flex items-center w-full text-left ${
-                  activeFilter === "important"
-                    ? "bg-blue-200 text-blue-700"
-                    : "text-gray-700 hover:bg-blue-200"
-                } p-2 rounded transition-colors`}
-              >
-                重要
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => filterTodos("completed")}
-                className={`flex items-center w-full text-left ${
-                  activeFilter === "completed"
-                    ? "bg-blue-200 text-blue-700"
-                    : "text-gray-700 hover:bg-blue-200"
-                } p-2 rounded transition-colors`}
-              >
-                完了済み
-              </button>
-            </li>
-          </ul>
+          <Search
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={18}
+          />
         </div>
       </div>
-    </aside>
+      <ul className="space-y-2">
+        <li>
+          <button
+            onClick={() => handleFilterClick("all")}
+            className={getButtonClass("all")}
+          >
+            すべてのタスク
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => handleFilterClick("today")}
+            className={getButtonClass("today")}
+          >
+            今日の予定
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => handleFilterClick("important")}
+            className={getButtonClass("important")}
+          >
+            重要
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => handleFilterClick("completed")}
+            className={getButtonClass("completed")}
+          >
+            完了済み
+          </button>
+        </li>
+      </ul>
+    </div>
   );
-}
-
-export default Sidebar;
+};

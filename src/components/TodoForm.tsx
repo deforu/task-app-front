@@ -1,4 +1,3 @@
-//TodoForm.tsx
 import React, { useState } from "react";
 import { createTodo } from "../lib/api/todos";
 import { Todo } from "../interfaces/index";
@@ -28,7 +27,6 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
     try {
       const res = await createTodo(data);
       if (res.status === 200) {
-        // 新しいタスクを配列の先頭に追加
         setTodos([res.data.todo, ...todos]);
         setTitle("");
         setDueDate("");
@@ -43,8 +41,8 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   };
 
   return (
-    <div className="fixed w-full p-4 bg-white shadow-md z-10">
-      <div className="w-full max-w-2xl">
+    <div className="sticky top-16 bg-white shadow-md z-20 p-4">
+      <div className="w-full max-w-2xl mx-auto">
         <form onSubmit={handleCreateTodo} className="flex items-center">
           <div className="relative flex-grow">
             <input

@@ -5,6 +5,7 @@ const Settings: React.FC = () => {
   const [theme, setTheme] = useState("light");
   const [fontSize, setFontSize] = useState("medium");
   const [notifications, setNotifications] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const savedSettings = localStorage.getItem("userSettings");
@@ -21,6 +22,8 @@ const Settings: React.FC = () => {
     localStorage.setItem("userSettings", JSON.stringify(settings));
     // Here you would typically update the app's global state or context
     document.body.className = theme;
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000); // Reset after 2 seconds
   };
 
   return (
@@ -63,10 +66,18 @@ const Settings: React.FC = () => {
         </div>
         <button
           onClick={saveSettings}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className={`bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${
+            isSaved ? "bg-green-500" : ""
+          }`}
         >
-          設定を保存
+          {isSaved ? "保存しました！" : "設定を保存"}
         </button>
+        {isSaved && (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+          </span>
+        )}
       </div>
     </div>
   );
