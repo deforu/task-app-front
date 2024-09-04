@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Todo } from "../interfaces/index";
 import { Search } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getTodos } from "./../lib/api/todos";
 
 interface SidebarProps {
   todos: Todo[];
@@ -21,6 +22,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
+  const handleGetTodos = async () => {
+    try {
+      const res = await getTodos();
+      if (res?.status === 200) {
+        setFilteredTodos(res.data.todos);
+      } else {
+        console.log(res.data.message);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const filterTodos = (filter: string) => {
     let filteredTodos = todos;
 
@@ -34,6 +48,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         break;
       case "completed":
         filteredTodos = todos.filter((todo) => todo.completed);
+        break;
+      case "all":
+        handleGetTodos();
+        filteredTodos = [...todos];
         break;
       default:
         break;

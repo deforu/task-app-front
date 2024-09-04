@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Todo } from "../interfaces/index";
 import { updateTodo, deleteTodo } from "../lib/api/todos";
 
@@ -12,10 +12,25 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
   const [updatedTitle, setUpdatedTitle] = useState<string>("");
   const [updatedDueDate, setUpdatedDueDate] = useState<string>("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [completingId, setCompletingId] = useState<number | null>(null);
 
   const handleDeleteTodo = (id: number) => {
     setDeletingId(id);
   };
+
+  useEffect(() => {
+    if (completingId !== null) {
+      const timer = setTimeout(() => {
+        const updatedTodos = todos.map((todo) =>
+          todo.id === completingId ? { ...todo, completed: true } : todo
+        );
+        setTodos(updatedTodos);
+        setCompletingId(null);
+      }, 800); // 0.8秒の遅延
+
+      return () => clearTimeout(timer);
+    }
+  }, [completingId, todos, setTodos]);
 
   const confirmDelete = async () => {
     if (deletingId !== null) {
@@ -64,10 +79,31 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
 
   const handleToggleComplete = async (id: number) => {
     const todoToUpdate = todos.find((todo) => todo.id === id);
-    if (todoToUpdate) {
+    if (todoToUpdate && !todoToUpdate.completed) {
+      setCompletingId(id);
       try {
         const res = await updateTodo(id, {
-          completed: !todoToUpdate.completed,
+          completed: true,
+        });
+        if (res?.status === 200) {
+          setTodos(
+            todos.map((todo) => (todo.id === id ? res.data.todo : todo))
+          );
+        } else {
+          console.error(
+            "タスクの完了状態の更新に失敗しました:",
+            res.data.message
+          );
+          setCompletingId(null);
+        }
+      } catch (error) {
+        console.error("タスクの完了状態の更新に失敗しました:", error);
+        setCompletingId(null);
+      }
+    } else if (todoToUpdate && todoToUpdate.completed) {
+      try {
+        const res = await updateTodo(id, {
+          completed: false,
         });
         if (res?.status === 200) {
           setTodos(
@@ -108,18 +144,54 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
     }
   };
 
+  const getTodoTextColor = (todo: Todo) => {
+    if (todo.completed) return "text-gray-500";
+    return "";
+  };
+
   const renderTodoItem = (todo: Todo) => (
     <li
       key={todo.id}
-      className="flex flex-col p-4 mb-4 border border-blue-300 rounded bg-white shadow"
+      className={`flex flex-col p-4 mb-4 border border-blue-300 rounded bg-white shadow
+        ${completingId === todo.id ? "animate-fadeOut" : ""}`}
     >
       <div className="flex items-center mb-2">
-        <input
-          type="checkbox"
-          checked={todo.completed}
-          onChange={() => handleToggleComplete(todo.id as number)}
-          className="mr-2"
-        />
+        <div className="relative mr-2">
+          <input
+            type="checkbox"
+            checked={todo.completed || completingId === todo.id}
+            onChange={() => handleToggleComplete(todo.id as number)}
+            className="hidden"
+            id={`todo-${todo.id}`}
+          />
+          <label
+            htmlFor={`todo-${todo.id}`}
+            className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center cursor-pointer
+              ${
+                todo.completed || completingId === todo.id
+                  ? "bg-blue-500 border-blue-500"
+                  : "border-gray-400"
+              }
+              transition-all duration-200 ease-in-out`}
+          >
+            {(todo.completed || completingId === todo.id) && (
+              <svg
+                className="w-3 h-3 text-white fill-current"
+                viewBox="0 0 20 20"
+              >
+                <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
+              </svg>
+            )}
+          </label>
+          {completingId === todo.id && (
+            <svg
+              className="absolute -top-1 -right-1 w-4 h-4 text-green-500 fill-current animate-complete"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 0C4.477 0 0 4.477 0 10c0 5.522 4.477 10 10 10 5.522 0 10-4.478 10-10 0-5.523-4.478-10-10-10zm5.293 7.293l-6.25 6.25a1 1 0 0 1-1.414 0l-3.125-3.125a1 1 0 1 1 1.414-1.414L8.125 11.25l5.293-5.293a1 1 0 1 1 1.414 1.414z" />
+            </svg>
+          )}
+        </div>
         {editingId === todo.id ? (
           <input
             type="text"
@@ -128,7 +200,11 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
             onChange={(e) => setUpdatedTitle(e.target.value)}
           />
         ) : (
-          <span className={`flex-1 ${todo.completed ? "line-through" : ""}`}>
+          <span
+            className={`flex-1 ${
+              todo.completed ? "line-through" : ""
+            } ${getTodoTextColor(todo)}`}
+          >
             {todo.title}
           </span>
         )}

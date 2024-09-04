@@ -34,6 +34,18 @@ const App: React.FC = () => {
     handleGetTodos();
   }, []);
 
+  const TodoContent = () => (
+    <>
+      <div className="hidden md:block">
+        <TodoForm todos={todos} setTodos={setTodos} />
+      </div>
+      <TodoList todos={filteredTodos} setTodos={setTodos} />
+      <div className="md:hidden fixed bottom-10 left-0 right-0 z-40">
+        <TodoForm todos={todos} setTodos={setTodos} />
+      </div>
+    </>
+  );
+
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-blue-50">
@@ -58,17 +70,9 @@ const App: React.FC = () => {
             />
           </div>
           <div className="flex-1">
-            <div className="pt-16">
+            <div className="pt-16 pb-32 md:pb-16">
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <>
-                      <TodoForm todos={todos} setTodos={setTodos} />
-                      <TodoList todos={filteredTodos} setTodos={setTodos} />
-                    </>
-                  }
-                />
+                <Route path="/" element={<TodoContent />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/profile" element={<Profile />} />
@@ -76,7 +80,7 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
-        <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-blue-600 text-white p-2 shadow-md z-40">
+        <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-blue-600 text-white p-2 shadow-md z-50">
           <nav>
             <ul className="flex justify-around">
               <li>
