@@ -63,6 +63,7 @@ const App: React.FC = () => {
           >
             <Sidebar
               todos={todos}
+              setTodos={setTodos}
               setFilteredTodos={setFilteredTodos}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
