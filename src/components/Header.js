@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Search } from "lucide-react";
+import { Menu, X, Search, Settings as SettingsIcon } from "lucide-react";
 
 interface HeaderProps {
   isMenuOpen: boolean;
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  setIsSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -14,6 +15,7 @@ const Header: React.FC<HeaderProps> = ({
   setIsMenuOpen,
   searchTerm,
   setSearchTerm,
+  setIsSettingsOpen,
 }) => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-4 shadow-md z-40">
@@ -42,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({
             />
           </div>
           <nav className="hidden md:block">
-            <ul className="flex space-x-5">
+            <ul className="flex space-x-5 items-center">
               <li>
                 <Link to="/" className="hover:text-blue-200">
                   ホーム
@@ -54,14 +56,12 @@ const Header: React.FC<HeaderProps> = ({
                 </Link>
               </li>
               <li>
-                <Link to="/settings" className="hover:text-blue-200">
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="hover:text-blue-200 flex items-center"
+                >
                   設定
-                </Link>
-              </li>
-              <li>
-                <Link to="/profile" className="hover:text-blue-200">
-                  プロフィール
-                </Link>
+                </button>
               </li>
             </ul>
           </nav>

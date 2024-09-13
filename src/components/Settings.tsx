@@ -1,39 +1,56 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "../contexts/ThemeContext";
 
-const Settings: React.FC = () => {
-  const [theme, setTheme] = useState("light");
-  const [fontSize, setFontSize] = useState("medium");
+const SettingsAndProfile: React.FC = () => {
+  const { theme, fontSize, setTheme, setFontSize } = useTheme();
+  const [name, setName] = useState("");
+  const [image, setImage] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    const savedSettings = localStorage.getItem("userSettings");
-    if (savedSettings) {
-      const { theme, fontSize, notifications } = JSON.parse(savedSettings);
-      setTheme(theme);
-      setFontSize(fontSize);
-      setNotifications(notifications);
+    const savedProfile = localStorage.getItem("userProfile");
+    if (savedProfile) {
+      const { name, image } = JSON.parse(savedProfile);
+      setName(name);
+      setImage(image);
+    }
+
+    const savedNotifications = localStorage.getItem("notifications");
+    if (savedNotifications) {
+      setNotifications(JSON.parse(savedNotifications));
     }
   }, []);
 
-  const saveSettings = () => {
-    const settings = { theme, fontSize, notifications };
-    localStorage.setItem("userSettings", JSON.stringify(settings));
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-    document.body.className = theme;
+  const saveChanges = () => {
+    const profile = { name, image };
+    localStorage.setItem("userProfile", JSON.stringify(profile));
+    localStorage.setItem("notifications", JSON.stringify(notifications));
+
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">設定</h2>
+    <div className="p-4 card shadow-md rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">個人設定</h2>
       <div className="space-y-4">
         <div>
           <label className="block mb-2">テーマ:</label>
           <select
             value={theme}
-            onChange={(e) => setTheme(e.target.value)}
+            onChange={(e) => setTheme(e.target.value as "light" | "dark")}
             className="w-full p-2 border rounded"
           >
             <option value="light">ライト</option>
@@ -44,7 +61,9 @@ const Settings: React.FC = () => {
           <label className="block mb-2">フォントサイズ:</label>
           <select
             value={fontSize}
-            onChange={(e) => setFontSize(e.target.value)}
+            onChange={(e) =>
+              setFontSize(e.target.value as "small" | "medium" | "large")
+            }
             className="w-full p-2 border rounded"
           >
             <option value="small">小</option>
@@ -63,23 +82,51 @@ const Settings: React.FC = () => {
             通知を受け取る
           </label>
         </div>
+      </div>
+
+      <h2 className="text-2xl font-bold mb-4 mt-8">プロフィール</h2>
+      <div className="space-y-4">
+        <div>
+          <label className="block mb-2">名前:</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block mb-2">プロフィール画像:</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mb-2"
+          />
+          {image && (
+            <img
+              src={image}
+              alt="Profile"
+              className="w-32 h-32 object-cover rounded-full"
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="mt-8">
         <button
-          onClick={saveSettings}
-          className={`bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${
-            isSaved ? "bg-green-500" : ""
+          onClick={saveChanges}
+          className={`w-full px-4 py-2 rounded transition-all duration-300 ${
+            isSaved
+              ? "bg-green-500 text-white"
+              : "bg-blue-500 text-white hover:bg-blue-600"
           }`}
         >
-          {isSaved ? "保存しました！" : "設定を保存"}
+          {isSaved ? "保存しました！" : "変更を保存"}
         </button>
-        {isSaved && (
-          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-          </span>
-        )}
       </div>
     </div>
   );
 };
 
-export default Settings;
+export default SettingsAndProfile;

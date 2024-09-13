@@ -1,3 +1,4 @@
+//TodoList.tsx
 import React, { useState, useEffect } from "react";
 import { Todo } from "../interfaces/index";
 import { updateTodo, deleteTodo } from "../lib/api/todos";
@@ -86,9 +87,11 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
           completed: true,
         });
         if (res?.status === 200) {
+          console.log("before ", todos);
           setTodos(
             todos.map((todo) => (todo.id === id ? res.data.todo : todo))
           );
+          console.log("after ", todos);
         } else {
           console.error(
             "タスクの完了状態の更新に失敗しました:",
