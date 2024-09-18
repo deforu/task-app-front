@@ -1,22 +1,17 @@
-import React, { useEffect, useCallback } from "react";
-import { Todo } from "../interfaces/index";
+// Sidebar.tsx
+import React from "react";
 import { Search } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getTodos } from "./../lib/api/todos";
 
 interface SidebarProps {
-  todos: Todo[];
-  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
-  setFilteredTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+  setFilter: React.Dispatch<React.SetStateAction<string>>;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  todos,
-  setTodos,
-  setFilteredTodos,
+  setFilter,
   searchTerm,
   setSearchTerm,
   setIsMenuOpen,
@@ -24,64 +19,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleGetTodos = useCallback(async () => {
-    try {
-      const res = await getTodos();
-      if (res?.status === 200) {
-        setTodos(res.data.todos);
-        return res.data.todos;
-      } else {
-        console.log(res.data.message);
-        return [];
-      }
-    } catch (err) {
-      console.log(err);
-      return [];
-    }
-  }, [setTodos]);
-
-  const filterTodos = useCallback(
-    async (filter: string) => {
-      let filteredTodos = todos;
-
-      if (filter === "all") {
-        filteredTodos = await handleGetTodos();
-      } else {
-        switch (filter) {
-          case "today":
-            const today = new Date().toISOString().split("T")[0];
-            filteredTodos = todos.filter((todo) => todo.due_date === today);
-            break;
-          case "important":
-            filteredTodos = todos.filter((todo) => todo.is_important);
-            break;
-          case "completed":
-            filteredTodos = todos.filter((todo) => todo.completed);
-            break;
-          default:
-            break;
-        }
-      }
-
-      if (searchTerm) {
-        filteredTodos = filteredTodos.filter((todo) =>
-          todo.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-
-      setFilteredTodos(filteredTodos);
-      setIsMenuOpen(false);
-    },
-    [todos, searchTerm, setFilteredTodos, setIsMenuOpen, handleGetTodos]
-  );
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const filter = params.get("filter") || "all";
-    filterTodos(filter);
-  }, [location.search, filterTodos]);
-
   const handleFilterClick = (filter: string) => {
+    setFilter(filter);
+    setIsMenuOpen(false);
     navigate(`/?filter=${filter}`);
   };
 

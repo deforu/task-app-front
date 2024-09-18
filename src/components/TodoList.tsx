@@ -1,4 +1,4 @@
-//TodoList.tsx
+// TodoList.tsx
 import React, { useState, useEffect } from "react";
 import { Todo } from "../interfaces/index";
 import { updateTodo, deleteTodo } from "../lib/api/todos";
@@ -6,32 +6,53 @@ import { updateTodo, deleteTodo } from "../lib/api/todos";
 interface TodoListProps {
   todos: Todo[];
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+  filter: string;
+  searchTerm: string;
 }
 
-export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
+export const TodoList: React.FC<TodoListProps> = ({
+  todos,
+  setTodos,
+  filter,
+  searchTerm,
+}) => {
+  const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [updatedTitle, setUpdatedTitle] = useState<string>("");
   const [updatedDueDate, setUpdatedDueDate] = useState<string>("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [completingId, setCompletingId] = useState<number | null>(null);
 
+  useEffect(() => {
+    let updatedTodos = [...todos];
+
+    switch (filter) {
+      case "today":
+        const today = new Date().toISOString().split("T")[0];
+        updatedTodos = updatedTodos.filter((todo) => todo.due_date === today);
+        break;
+      case "important":
+        updatedTodos = updatedTodos.filter((todo) => todo.is_important);
+        break;
+      case "completed":
+        updatedTodos = updatedTodos.filter((todo) => todo.completed);
+        break;
+      default:
+        break;
+    }
+
+    if (searchTerm) {
+      updatedTodos = updatedTodos.filter((todo) =>
+        todo.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredTodos(updatedTodos);
+  }, [todos, filter, searchTerm]);
+
   const handleDeleteTodo = (id: number) => {
     setDeletingId(id);
   };
-
-  useEffect(() => {
-    if (completingId !== null) {
-      const timer = setTimeout(() => {
-        const updatedTodos = todos.map((todo) =>
-          todo.id === completingId ? { ...todo, completed: true } : todo
-        );
-        setTodos(updatedTodos);
-        setCompletingId(null);
-      }, 800); // 0.8秒の遅延
-
-      return () => clearTimeout(timer);
-    }
-  }, [completingId, todos, setTodos]);
 
   const confirmDelete = async () => {
     if (deletingId !== null) {
@@ -80,33 +101,11 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
 
   const handleToggleComplete = async (id: number) => {
     const todoToUpdate = todos.find((todo) => todo.id === id);
-    if (todoToUpdate && !todoToUpdate.completed) {
-      setCompletingId(id);
+    if (todoToUpdate) {
+      const newCompletedStatus = !todoToUpdate.completed;
       try {
         const res = await updateTodo(id, {
-          completed: true,
-        });
-        if (res?.status === 200) {
-          console.log("before ", todos);
-          setTodos(
-            todos.map((todo) => (todo.id === id ? res.data.todo : todo))
-          );
-          console.log("after ", todos);
-        } else {
-          console.error(
-            "タスクの完了状態の更新に失敗しました:",
-            res.data.message
-          );
-          setCompletingId(null);
-        }
-      } catch (error) {
-        console.error("タスクの完了状態の更新に失敗しました:", error);
-        setCompletingId(null);
-      }
-    } else if (todoToUpdate && todoToUpdate.completed) {
-      try {
-        const res = await updateTodo(id, {
-          completed: false,
+          completed: newCompletedStatus,
         });
         if (res?.status === 200) {
           setTodos(
@@ -162,7 +161,7 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
         <div className="relative mr-2">
           <input
             type="checkbox"
-            checked={todo.completed || completingId === todo.id}
+            checked={todo.completed}
             onChange={() => handleToggleComplete(todo.id as number)}
             className="hidden"
             id={`todo-${todo.id}`}
@@ -171,13 +170,13 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
             htmlFor={`todo-${todo.id}`}
             className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center cursor-pointer
               ${
-                todo.completed || completingId === todo.id
+                todo.completed
                   ? "bg-blue-500 border-blue-500"
                   : "border-gray-400"
               }
               transition-all duration-200 ease-in-out`}
           >
-            {(todo.completed || completingId === todo.id) && (
+            {todo.completed && (
               <svg
                 className="w-3 h-3 text-white fill-current"
                 viewBox="0 0 20 20"
@@ -186,14 +185,6 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
               </svg>
             )}
           </label>
-          {completingId === todo.id && (
-            <svg
-              className="absolute -top-1 -right-1 w-4 h-4 text-green-500 fill-current animate-complete"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 0C4.477 0 0 4.477 0 10c0 5.522 4.477 10 10 10 5.522 0 10-4.478 10-10 0-5.523-4.478-10-10-10zm5.293 7.293l-6.25 6.25a1 1 0 0 1-1.414 0l-3.125-3.125a1 1 0 1 1 1.414-1.414L8.125 11.25l5.293-5.293a1 1 0 1 1 1.414 1.414z" />
-            </svg>
-          )}
         </div>
         {editingId === todo.id ? (
           <input
@@ -280,7 +271,7 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
     <div>
       <ul className="list-none p-5">
         <h1 className="text-2xl font-bold p-5">タスク</h1>
-        {todos.filter((todo) => !todo.completed).map(renderTodoItem)}
+        {filteredTodos.filter((todo) => !todo.completed).map(renderTodoItem)}
       </ul>
 
       {/* Separator Line */}
@@ -289,7 +280,7 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
       {/* Completed Tasks */}
       <ul className="list-none p-5">
         <h1 className="text-2xl font-bold p-5">完了済み</h1>
-        {todos.filter((todo) => todo.completed).map(renderTodoItem)}
+        {filteredTodos.filter((todo) => todo.completed).map(renderTodoItem)}
       </ul>
       {deletingId !== null && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">

@@ -1,3 +1,4 @@
+//TodoForm.tsx
 import React, { useState } from "react";
 import { createTodo } from "../lib/api/todos";
 import { Todo } from "../interfaces/index";
@@ -41,7 +42,9 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   };
 
   return (
-    <div className="sticky top-16 bg-white shadow-md z-20 p-4">
+    <div className="sticky top-16 bg-white shadow-md z-20 p-4 relative">
+      {" "}
+      {/* relativeクラスを追加 */}
       <div className="w-full max-w-2xl mx-auto">
         <form onSubmit={handleCreateTodo} className="flex items-center">
           <div className="relative flex-grow">
@@ -107,7 +110,8 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
           </button>
         </form>
         {showDatePicker && (
-          <div className="absolute mt-1 p-2 bg-white border rounded-lg shadow-md">
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-1 p-2 bg-white border rounded-lg shadow-md z-50">
+            {/* カレンダーを画面中央に表示するためにスタイルを修正 */}
             <input
               type="date"
               value={dueDate}

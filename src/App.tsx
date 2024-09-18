@@ -1,3 +1,4 @@
+// App.tsx
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import { TodoList } from "./components/TodoList";
@@ -10,14 +11,14 @@ import Settings from "./components/Settings";
 import Modal from "./components/Modal";
 import { getTodos } from "./lib/api/todos";
 import { Todo } from "./interfaces/index";
-import { Home, Bell, Settings as SettingsIcon, User } from "lucide-react";
+import { Home, Bell, Settings as SettingsIcon } from "lucide-react";
 
 const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [filter, setFilter] = useState("all");
 
   const handleGetTodos = async () => {
     try {
@@ -41,7 +42,12 @@ const App: React.FC = () => {
       <div className="hidden md:block">
         <TodoForm todos={todos} setTodos={setTodos} />
       </div>
-      <TodoList todos={filteredTodos} setTodos={setTodos} />
+      <TodoList
+        todos={todos}
+        setTodos={setTodos}
+        filter={filter}
+        searchTerm={searchTerm}
+      />
       <div className="md:hidden fixed bottom-10 left-0 right-0 z-40">
         <TodoForm todos={todos} setTodos={setTodos} />
       </div>
@@ -66,9 +72,7 @@ const App: React.FC = () => {
               } transition-transform duration-300 ease-in-out md:sticky md:translate-x-0 top-16 h-[calc(100vh-4rem)]`}
             >
               <Sidebar
-                todos={todos}
-                setTodos={setTodos}
-                setFilteredTodos={setFilteredTodos}
+                setFilter={setFilter}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 setIsMenuOpen={setIsMenuOpen}
