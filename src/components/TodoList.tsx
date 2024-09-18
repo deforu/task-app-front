@@ -21,7 +21,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   const [updatedTitle, setUpdatedTitle] = useState<string>("");
   const [updatedDueDate, setUpdatedDueDate] = useState<string>("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [completingId, setCompletingId] = useState<number | null>(null);
+  const [completingId, setCompletingId] = useState<number | null>(null); // 追加
 
   useEffect(() => {
     let updatedTodos = [...todos];
@@ -112,27 +112,54 @@ export const TodoList: React.FC<TodoListProps> = ({
     }
   };
 
-  const handleToggleComplete = async (id: number) => {
+  const handleToggleComplete = (id: number) => {
     const todoToUpdate = todos.find((todo) => todo.id === id);
-    if (todoToUpdate) {
-      const newCompletedStatus = !todoToUpdate.completed;
-      try {
-        const res = await updateTodo(id, {
-          completed: newCompletedStatus,
-        });
-        if (res?.status === 200) {
-          setTodos(
-            todos.map((todo) => (todo.id === id ? res.data.todo : todo))
-          );
-        } else {
-          console.error(
-            "タスクの完了状態の更新に失敗しました:",
-            res.data.message
-          );
+    if (!todoToUpdate) return;
+
+    const newCompletedStatus = !todoToUpdate.completed;
+
+    if (newCompletedStatus) {
+      // タスクを完了にする場合: アニメーションを適用
+      setCompletingId(id);
+      setTimeout(async () => {
+        try {
+          const res = await updateTodo(id, {
+            completed: newCompletedStatus,
+          });
+          if (res?.status === 200) {
+            setTodos(
+              todos.map((todo) => (todo.id === id ? res.data.todo : todo))
+            );
+          } else {
+            console.error(
+              "タスクの完了状態の更新に失敗しました:",
+              res.data.message
+            );
+          }
+        } catch (error) {
+          console.error("タスクの完了状態の更新に失敗しました:", error);
         }
-      } catch (error) {
-        console.error("タスクの完了状態の更新に失敗しました:", error);
-      }
+        setCompletingId(null);
+      }, 700); // 0.8秒の遅延
+    } else {
+      updateTodo(id, {
+        completed: newCompletedStatus,
+      })
+        .then((res) => {
+          if (res?.status === 200) {
+            setTodos(
+              todos.map((todo) => (todo.id === id ? res.data.todo : todo))
+            );
+          } else {
+            console.error(
+              "タスクの完了状態の更新に失敗しました:",
+              res.data.message
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("タスクの完了状態の更新に失敗しました:", error);
+        });
     }
   };
 
@@ -174,7 +201,7 @@ export const TodoList: React.FC<TodoListProps> = ({
         <div className="relative mr-2">
           <input
             type="checkbox"
-            checked={todo.completed}
+            checked={todo.completed || completingId === todo.id}
             onChange={() => handleToggleComplete(todo.id as number)}
             className="hidden"
             id={`todo-${todo.id}`}
@@ -183,13 +210,13 @@ export const TodoList: React.FC<TodoListProps> = ({
             htmlFor={`todo-${todo.id}`}
             className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center cursor-pointer
               ${
-                todo.completed
+                todo.completed || completingId === todo.id
                   ? "bg-blue-500 border-blue-500"
                   : "border-gray-400"
               }
               transition-all duration-200 ease-in-out`}
           >
-            {todo.completed && (
+            {(todo.completed || completingId === todo.id) && (
               <svg
                 className="w-3 h-3 text-white fill-current"
                 viewBox="0 0 20 20"
