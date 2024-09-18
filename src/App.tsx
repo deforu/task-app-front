@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import { TodoList } from "./components/TodoList";
-import { TodoForm } from "./components/TodoForm";
+import { TodoForm } from "./components/TodoForm"; // 名前付きインポートに変更
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Header from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
@@ -24,7 +24,19 @@ const App: React.FC = () => {
     try {
       const res = await getTodos();
       if (res?.status === 200) {
-        setTodos(res.data.todos);
+        // タスクを新しい順にソート（created_at が存在する場合）
+        const sortedTodos = res.data.todos.sort((a: Todo, b: Todo) => {
+          if (a.created_at && b.created_at) {
+            return (
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+            );
+          } else {
+            // created_at がない場合は id でソート
+            return b.id - a.id;
+          }
+        });
+        setTodos(sortedTodos);
       } else {
         console.log(res.data.message);
       }

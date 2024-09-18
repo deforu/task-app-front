@@ -26,6 +26,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   useEffect(() => {
     let updatedTodos = [...todos];
 
+    // フィルタリング
     switch (filter) {
       case "today":
         const today = new Date().toISOString().split("T")[0];
@@ -38,14 +39,26 @@ export const TodoList: React.FC<TodoListProps> = ({
         updatedTodos = updatedTodos.filter((todo) => todo.completed);
         break;
       default:
+        // "all" の場合は全て表示
         break;
     }
 
+    // 検索フィルタリング
     if (searchTerm) {
       updatedTodos = updatedTodos.filter((todo) =>
         todo.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+
+    updatedTodos.sort((a: Todo, b: Todo) => {
+      if (a.created_at && b.created_at) {
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      } else {
+        return b.id - a.id;
+      }
+    });
 
     setFilteredTodos(updatedTodos);
   }, [todos, filter, searchTerm]);
