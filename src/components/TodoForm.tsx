@@ -1,7 +1,8 @@
-//TodoForm.tsx
-import React, { useState } from "react";
+// TodoForm.tsx
+import React, { useState, useRef } from "react";
 import { createTodo } from "../lib/api/todos";
 import { Todo } from "../interfaces/index";
+import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート
 
 interface TodoFormProps {
   todos: Todo[];
@@ -13,6 +14,8 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   const [dueDate, setDueDate] = useState<string>("");
   const [isImportant, setIsImportant] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const { theme } = useTheme(); // 現在のテーマを取得
 
   const handleCreateTodo = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,9 +45,7 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   };
 
   return (
-    <div className="sticky top-16 bg-white shadow-md z-20 p-4 relative">
-      {" "}
-      {/* relativeクラスを追加 */}
+    <div className="sticky top-16 bg-light-input dark:bg-dark-card shadow-md z-20 p-4 relative">
       <div className="w-full max-w-2xl mx-auto">
         <form onSubmit={handleCreateTodo} className="flex items-center">
           <div className="relative flex-grow">
@@ -52,14 +53,14 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
               type="text"
               value={title}
               placeholder="タスクを入力"
-              className="w-full bg-blue-100 hover:bg-gray-100 p-3 pr-20 rounded-lg"
+              className="w-full bg-light-card dark:bg-dark-input text-light-text dark:text-dark-text hover:bg-light-hover dark:hover:bg-dark-hover p-3 pr-20 rounded-lg"
               onChange={(e) => setTitle(e.target.value)}
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
               <button
                 type="button"
-                onClick={() => setShowDatePicker(!showDatePicker)}
-                className="p-1 text-blue-500 hover:text-blue-700"
+                onClick={() => dateInputRef.current?.focus()}
+                className="p-1 text-light-text dark:text-dark-text hover:text-blue-700"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -82,7 +83,7 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
                 type="button"
                 onClick={() => setIsImportant(!isImportant)}
                 className={`p-1 ${
-                  isImportant ? "text-blue-500" : "text-gray-400"
+                  isImportant ? "text-yellow-500" : "text-gray-400"
                 } hover:text-blue-700`}
               >
                 <svg
@@ -110,13 +111,13 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
           </button>
         </form>
         {showDatePicker && (
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-1 p-2 bg-white border rounded-lg shadow-md z-50">
-            {/* カレンダーを画面中央に表示するためにスタイルを修正 */}
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-1 p-2 bg-light-card dark:bg-dark-card border rounded-lg shadow-md z-50">
             <input
               type="date"
+              ref={dateInputRef}
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="p-1 border rounded"
+              className="p-1 border border-light-input dark:border-dark-input rounded bg-light-input dark:bg-dark-input text-light-text dark:text-dark-text"
             />
           </div>
         )}

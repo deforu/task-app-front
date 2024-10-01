@@ -1,3 +1,4 @@
+// ThemeContext.tsx
 import React, { createContext, useState, useContext, useEffect } from "react";
 
 type Theme = "light" | "dark";
@@ -27,7 +28,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     localStorage.setItem("theme", theme);
     localStorage.setItem("fontSize", fontSize);
-    document.body.className = `theme-${theme} font-${fontSize}`;
+
+    // テーマに応じて 'dark' クラスを追加または削除
+    if (theme === "dark") {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+
+    // フォントサイズのクラスを管理
+    document.body.classList.remove("font-small", "font-medium", "font-large");
+    document.body.classList.add(`font-${fontSize}`);
   }, [theme, fontSize]);
 
   const contextSetTheme = (newTheme: Theme) => {

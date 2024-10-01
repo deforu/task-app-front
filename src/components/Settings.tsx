@@ -43,7 +43,7 @@ const SettingsAndProfile: React.FC = () => {
   };
 
   return (
-    <div className="p-4 card shadow-md rounded-lg">
+    <div className="p-4 card shadow-md rounded-lg text-light-text dark:text-dark-text">
       <h2 className="text-2xl font-bold mb-4">個人設定</h2>
       <div className="space-y-4">
         <div>
@@ -51,7 +51,7 @@ const SettingsAndProfile: React.FC = () => {
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value as "light" | "dark")}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded text-light-text"
           >
             <option value="light">ライト</option>
             <option value="dark">ダーク</option>
@@ -64,7 +64,7 @@ const SettingsAndProfile: React.FC = () => {
             onChange={(e) =>
               setFontSize(e.target.value as "small" | "medium" | "large")
             }
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded text-light-text"
           >
             <option value="small">小</option>
             <option value="medium">中</option>
@@ -92,7 +92,7 @@ const SettingsAndProfile: React.FC = () => {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded text-light-text"
           />
         </div>
         <div>

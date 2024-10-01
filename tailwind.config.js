@@ -1,24 +1,22 @@
 // tailwind.config.js
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
-  darkMode: "class", // or 'media' if you want to use the system preference
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        light: {
-          bg: "#ffffff",
-          text: "#333333",
-          card: "#f0f0f0",
-          input: "#e8f0fe",
-          hover: "#f0f0f0",
-        },
-        dark: {
-          bg: "#121212",
-          text: "#ffffff",
-          card: "#1e1e1e",
-          input: "#2c2c2c",
-          hover: "#2a2a2a",
-        },
+        "light-header": "#2563eb",
+        "light-body": "#eff6ff",
+        "light-text": "#333333",
+        "light-card": "#dbeafe",
+        "light-input": "#ffffff",
+        "light-hover": "#bfdbfe",
+        "dark-header": "#121212",
+        "dark-body": "#242424",
+        "dark-text": "#ffffff",
+        "dark-card": "#1e1e1e",
+        "dark-input": "#2c2c2c",
+        "dark-hover": "#2a2a2a",
       },
     },
   },

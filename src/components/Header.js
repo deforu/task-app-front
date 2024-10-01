@@ -1,7 +1,8 @@
-//Header.js
+// Header.js
 import React from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Search, Settings as SettingsIcon } from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -18,12 +19,14 @@ const Header: React.FC<HeaderProps> = ({
   setSearchTerm,
   setIsSettingsOpen,
 }) => {
+  const { theme } = useTheme(); // 現在のテーマを取得
+
   return (
-    <header className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-4 shadow-md z-40">
+    <header className="fixed top-0 left-0 right-0 bg-light-header dark:bg-dark-header text-white p-4 shadow-md z-40">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <button
-            className="mr-2 md:hidden"
+            className="mr-2 md:hidden text-light-text dark:text-dark-text"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -35,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({
             <input
               type="search"
               placeholder="検索"
-              className="py-1 px-2 rounded text-black"
+              className="py-1 px-2 rounded text-black bg-light-input dark:bg-dark-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -62,6 +65,7 @@ const Header: React.FC<HeaderProps> = ({
                   className="hover:text-blue-200 flex items-center"
                 >
                   設定
+                  <SettingsIcon className="ml-1" size={18} />
                 </button>
               </li>
             </ul>

@@ -2,6 +2,7 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート
 
 interface SidebarProps {
   setFilter: React.Dispatch<React.SetStateAction<string>>;
@@ -18,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useTheme(); // 現在のテーマを取得
 
   const handleFilterClick = (filter: string) => {
     setFilter(filter);
@@ -30,19 +32,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const activeFilter = params.get("filter") || "all";
     return `flex items-center w-full text-left ${
       activeFilter === filter
-        ? "bg-blue-200 text-blue-700"
-        : "text-gray-700 hover:bg-blue-200"
+        ? "bg-light-hover dark:bg-dark-hover text-light-text dark:text-dark-text"
+        : "text-light-text dark:text-dark-text hover:bg-light-hover dark:hover:bg-dark-hover"
     } p-2 rounded transition-colors`;
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full bg-light-card dark:bg-dark-card">
       <div className="hidden md:block mb-4">
         <div className="relative">
           <input
             type="search"
             placeholder="検索"
-            className="w-full p-2 pr-8 rounded bg-white"
+            className="w-full p-2 pr-8 rounded bg-light-input dark:bg-dark-input text-light-text dark:text-dark-text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

@@ -67,7 +67,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider>
       <Router>
-        <div className="flex flex-col min-h-screen bg-blue-50">
+        <div className="flex flex-col min-h-screen bg-light-body dark:bg-dark-body">
           <Header
             isMenuOpen={isMenuOpen}
             setIsMenuOpen={setIsMenuOpen}

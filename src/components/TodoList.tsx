@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Todo } from "../interfaces/index";
 import { updateTodo, deleteTodo } from "../lib/api/todos";
+import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート
 
 interface TodoListProps {
   todos: Todo[];
@@ -21,7 +22,8 @@ export const TodoList: React.FC<TodoListProps> = ({
   const [updatedTitle, setUpdatedTitle] = useState<string>("");
   const [updatedDueDate, setUpdatedDueDate] = useState<string>("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [completingId, setCompletingId] = useState<number | null>(null); // 追加
+  const [completingId, setCompletingId] = useState<number | null>(null);
+  const { theme } = useTheme(); // 現在のテーマを取得
 
   useEffect(() => {
     let updatedTodos = [...todos];
@@ -140,8 +142,9 @@ export const TodoList: React.FC<TodoListProps> = ({
           console.error("タスクの完了状態の更新に失敗しました:", error);
         }
         setCompletingId(null);
-      }, 700); // 0.8秒の遅延
+      }, 800); // 0.8秒の遅延
     } else {
+      // タスクを未完了にする場合: 即座に状態を更新
       updateTodo(id, {
         completed: newCompletedStatus,
       })
@@ -187,14 +190,14 @@ export const TodoList: React.FC<TodoListProps> = ({
   };
 
   const getTodoTextColor = (todo: Todo) => {
-    if (todo.completed) return "text-gray-500";
-    return "";
+    if (todo.completed) return "text-light-text dark:text-dark-text";
+    return "text-light-text dark:text-dark-text";
   };
 
   const renderTodoItem = (todo: Todo) => (
     <li
       key={todo.id}
-      className={`flex flex-col p-4 mb-4 border border-blue-300 rounded bg-white shadow
+      className={`flex flex-col p-4 mb-4 border border-light-card dark:border-dark-card rounded bg-light-input dark:bg-dark-card shadow
         ${completingId === todo.id ? "animate-fadeOut" : ""}`}
     >
       <div className="flex items-center mb-2">
@@ -229,7 +232,7 @@ export const TodoList: React.FC<TodoListProps> = ({
         {editingId === todo.id ? (
           <input
             type="text"
-            className="flex-1 mx-2 p-2 border border-blue-300 rounded"
+            className="flex-1 mx-2 p-2 border border-light-card dark:border-dark-card rounded bg-light-input dark:bg-dark-input text-light-text dark:text-dark-text"
             value={updatedTitle}
             onChange={(e) => setUpdatedTitle(e.target.value)}
           />
@@ -248,12 +251,14 @@ export const TodoList: React.FC<TodoListProps> = ({
           {editingId === todo.id ? (
             <input
               type="date"
-              className="mx-2 p-2 border border-blue-300 rounded"
+              className="mx-2 p-2 border border-light-card dark:border-dark-card rounded bg-light-input dark:bg-dark-input text-light-text dark:text-dark-text"
               value={updatedDueDate}
               onChange={(e) => setUpdatedDueDate(e.target.value)}
             />
           ) : (
-            <span className="text-sm text-gray-500">{todo.due_date}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {todo.due_date}
+            </span>
           )}
         </div>
         <div className="flex items-center">
@@ -308,14 +313,14 @@ export const TodoList: React.FC<TodoListProps> = ({
   );
 
   return (
-    <div>
+    <div className="text-light-text dark:text-dark-text">
       <ul className="list-none p-5">
         <h1 className="text-2xl font-bold p-5">タスク</h1>
         {filteredTodos.filter((todo) => !todo.completed).map(renderTodoItem)}
       </ul>
 
       {/* Separator Line */}
-      <hr className="border-t-2 border-gray-300 my-4" />
+      <hr className="border-t-2 border-gray-300 my-4 dark:border-gray-700" />
 
       {/* Completed Tasks */}
       <ul className="list-none p-5">
@@ -323,8 +328,8 @@ export const TodoList: React.FC<TodoListProps> = ({
         {filteredTodos.filter((todo) => todo.completed).map(renderTodoItem)}
       </ul>
       {deletingId !== null && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="bg-white p-5 rounded-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-black bg-opacity-50 h-full w-full">
+          <div className="bg-light-body dark:bg-dark-body p-5 rounded-lg">
             <p className="mb-4">本当に削除しますか？</p>
             <div className="flex justify-end">
               <button
