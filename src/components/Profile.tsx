@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+// Profile.tsx
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../App";
 
 const Profile: React.FC = () => {
-  const [name, setName] = useState("");
+  const { currentUser } = useContext(AuthContext);
   const [image, setImage] = useState("");
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("userProfile");
     if (savedProfile) {
-      const { name, image } = JSON.parse(savedProfile);
-      setName(name);
+      const { image } = JSON.parse(savedProfile);
       setImage(image);
     }
   }, []);
@@ -26,7 +27,7 @@ const Profile: React.FC = () => {
   };
 
   const saveProfile = () => {
-    const profile = { name, image };
+    const profile = { image };
     localStorage.setItem("userProfile", JSON.stringify(profile));
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
@@ -38,11 +39,21 @@ const Profile: React.FC = () => {
       <div className="space-y-4">
         <div>
           <label className="block mb-2">名前:</label>
+          <span>こんにちは、{currentUser?.name}さん</span>
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border rounded"
+            value={currentUser?.name || ""}
+            readOnly
+            className="w-full p-2 border rounded bg-gray-100"
+          />
+        </div>
+        <div>
+          <label className="block mb-2">メールアドレス:</label>
+          <input
+            type="email"
+            value={currentUser?.email || ""}
+            readOnly
+            className="w-full p-2 border rounded bg-gray-100"
           />
         </div>
         <div>
@@ -67,7 +78,7 @@ const Profile: React.FC = () => {
             isSaved ? "bg-green-500" : ""
           }`}
         >
-          {isSaved ? "保存しました！" : "プロフィールを保存"}
+          {isSaved ? "保存しました！" : "プロフィール画像を保存"}
         </button>
         {isSaved && (
           <span className="absolute -top-1 -right-1 flex h-3 w-3">

@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+// Settings.tsx
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../App";
 import { useTheme } from "../contexts/ThemeContext";
 
-const SettingsAndProfile: React.FC = () => {
+const Profile: React.FC = () => {
+  const { currentUser } = useContext(AuthContext);
   const { theme, fontSize, setTheme, setFontSize } = useTheme();
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
@@ -12,15 +15,17 @@ const SettingsAndProfile: React.FC = () => {
     const savedProfile = localStorage.getItem("userProfile");
     if (savedProfile) {
       const { name, image } = JSON.parse(savedProfile);
-      setName(name);
+      setName(name || currentUser?.name || "");
       setImage(image);
+    } else {
+      setName(currentUser?.name || "");
     }
 
     const savedNotifications = localStorage.getItem("notifications");
     if (savedNotifications) {
       setNotifications(JSON.parse(savedNotifications));
     }
-  }, []);
+  }, [currentUser]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,8 +49,42 @@ const SettingsAndProfile: React.FC = () => {
 
   return (
     <div className="p-4 card shadow-md rounded-lg text-light-text dark:text-dark-text">
-      <h2 className="text-2xl font-bold mb-4">個人設定</h2>
+      <h2 className="text-2xl font-bold mb-4">プロフィールと設定</h2>
       <div className="space-y-4">
+        <div>
+          <label className="block mb-2">プロフィール画像:</label>
+          {image && (
+            <img
+              src={image}
+              alt="Profile"
+              className="w-32 h-32 object-cover rounded-full"
+            />
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mt-2"
+          />
+        </div>
+        <div>
+          <label className="block mb-2">名前:</label>
+          <input
+            type="text"
+            value={currentUser?.name || ""}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full p-2 border rounded bg-gray-100 text-light-text"
+          />
+        </div>
+        <div>
+          <label className="block mb-2">メールアドレス:</label>
+          <input
+            type="email"
+            value={currentUser?.email || ""}
+            readOnly
+            className="w-full p-2 border rounded bg-gray-100 text-light-text"
+          />
+        </div>
         <div>
           <label className="block mb-2">テーマ:</label>
           <select
@@ -84,35 +123,6 @@ const SettingsAndProfile: React.FC = () => {
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-4 mt-8">プロフィール</h2>
-      <div className="space-y-4">
-        <div>
-          <label className="block mb-2">名前:</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border rounded text-light-text"
-          />
-        </div>
-        <div>
-          <label className="block mb-2">プロフィール画像:</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="mb-2"
-          />
-          {image && (
-            <img
-              src={image}
-              alt="Profile"
-              className="w-32 h-32 object-cover rounded-full"
-            />
-          )}
-        </div>
-      </div>
-
       <div className="mt-8">
         <button
           onClick={saveChanges}
@@ -129,4 +139,4 @@ const SettingsAndProfile: React.FC = () => {
   );
 };
 
-export default SettingsAndProfile;
+export default Profile;
