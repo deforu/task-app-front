@@ -11,8 +11,8 @@ interface TodoItemProps {
 export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(todo.title);
-  const [dueDate, setDueDate] = useState(todo.due_date || "");
-  const [isImportant, setIsImportant] = useState(todo.is_important);
+  const [dueDate, setDueDate] = useState(todo.dueDate || "");
+  const [isImportant, setIsImportant] = useState(todo.isImportant);
 
   const handleDeleteTodo = async (id: number) => {
     try {
@@ -32,8 +32,8 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
       const updatedTodo = {
         ...todo,
         title: title.trim(),
-        due_date: dueDate,
-        is_important: isImportant,
+        dueDate: dueDate,
+        isImportant: isImportant,
       };
       const res = await updateTodo(todo.id as number, updatedTodo);
       if (res?.status === 200) {
@@ -67,18 +67,17 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
 
   const toggleImportant = async () => {
     try {
-      const updatedTodo = { ...todo, is_important: !isImportant };
+      const updatedTodo = { ...todo, isImportant: !todo.isImportant };
       const res = await updateTodo(todo.id as number, updatedTodo);
       if (res?.status === 200) {
-        setTodos((prev: Todo[]) =>
-          prev.map((t: Todo) => (t.id === todo.id ? res.data.todo : t))
+        setTodos((prevTodos) =>
+          prevTodos.map((t) => (t.id === todo.id ? res.data.todo : t))
         );
-        setIsImportant(!isImportant);
       } else {
         console.error(res.data.message);
       }
     } catch (err) {
-      console.error("Todoの重要フラグの更新中にエラーが発生しました:", err);
+      console.error("重要フラグの更新中にエラーが発生しました:", err);
     }
   };
 
@@ -103,7 +102,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
         ) : (
           <span
             className={`${todo.completed ? "line-through text-gray-500" : ""} ${
-              todo.is_important ? "font-bold text-blue-500" : ""
+              todo.isImportant ? "font-bold text-blue-500" : ""
             }`}
           >
             {todo.title}
@@ -119,7 +118,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
             className="border rounded-lg p-2"
           />
         ) : (
-          todo.due_date
+          todo.dueDate
         )}
       </td>
       <td className="py-2 px-4">

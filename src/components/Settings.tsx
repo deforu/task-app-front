@@ -1,15 +1,19 @@
 // Settings.tsx
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 import { useTheme } from "../contexts/ThemeContext";
+import { signOut } from "../lib/api/auth";
+import Cookies from "js-cookie";
 
 const Profile: React.FC = () => {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, setIsSignedIn } = useContext(AuthContext);
   const { theme, fontSize, setTheme, setFontSize } = useTheme();
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("userProfile");
@@ -45,6 +49,28 @@ const Profile: React.FC = () => {
 
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const res = await signOut();
+
+      if (res.data.success === true) {
+        // サインアウト時には各Cookieを削除
+        Cookies.remove("_access_token");
+        Cookies.remove("_client");
+        Cookies.remove("_uid");
+
+        setIsSignedIn(false);
+        navigate("/signin");
+
+        console.log("Succeeded in sign out");
+      } else {
+        console.log("Failed in sign out");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -133,6 +159,15 @@ const Profile: React.FC = () => {
           }`}
         >
           {isSaved ? "保存しました！" : "変更を保存"}
+        </button>
+      </div>
+
+      <div className="mt-4">
+        <button
+          onClick={handleSignOut}
+          className="w-full px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+        >
+          ログアウト
         </button>
       </div>
     </div>

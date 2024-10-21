@@ -79,6 +79,7 @@ const App: React.FC = () => {
   const handleGetTodos = async () => {
     try {
       const res = await getTodos();
+      // console.log("Fetched todos:", res.data.todos); // デバック用に追加
       if (res?.status === 200) {
         const sortedTodos = res.data.todos.sort((a: Todo, b: Todo) => {
           if (a.created_at && b.created_at) {

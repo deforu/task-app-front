@@ -1,8 +1,8 @@
 // TodoForm.tsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createTodo } from "../lib/api/todos";
 import { Todo } from "../interfaces/index";
-import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート
+import { useTheme } from "../contexts/ThemeContext";
 
 interface TodoFormProps {
   todos: Todo[];
@@ -15,17 +15,22 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   const [isImportant, setIsImportant] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const dateInputRef = useRef<HTMLInputElement>(null);
-  const { theme } = useTheme(); // 現在のテーマを取得
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    // コンポーネントがマウントされたときに今日の日付を設定
+    const today = new Date().toISOString().split("T")[0];
+    setDueDate(today);
+  }, []);
 
   const handleCreateTodo = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const today = new Date().toISOString().split("T")[0];
     const data = {
       title: title.trim(),
       completed: false,
-      due_date: dueDate || today,
-      is_important: isImportant,
+      dueDate: dueDate,
+      isImportant: isImportant,
     };
 
     try {
@@ -33,8 +38,8 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
       if (res.status === 200) {
         setTodos([res.data.todo, ...todos]);
         setTitle("");
-        setDueDate("");
         setIsImportant(false);
+        // 日付はリセットせず、今日の日付のままにする
       } else {
         console.error(res.data.message);
         console.error(res.data.errors);
@@ -59,7 +64,7 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
               <button
                 type="button"
-                onClick={() => dateInputRef.current?.focus()}
+                onClick={() => setShowDatePicker(!showDatePicker)}
                 className="p-1 text-light-text dark:text-dark-text hover:text-blue-700"
               >
                 <svg

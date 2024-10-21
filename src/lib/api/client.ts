@@ -1,20 +1,22 @@
-import axios from "axios"
+// client.ts
+
+import axios from "axios";
 import Cookies from "js-cookie";
-import applyCaseMiddleware from "axios-case-converter"
+import applyCaseMiddleware from "axios-case-converter";
 
-// applyCaseMiddleware:
-// axiosで受け取ったレスポンスの値をスネークケース→キャメルケースに変換
-// または送信するリクエストの値をキャメルケース→スネークケースに変換してくれるライブラリ
-
-// ヘッダーに関してはケバブケースのままで良いので適用を無視するオプションを追加
+// ヘッダーの変換を無視するオプション
 const options = {
-  ignoreHeaders: true 
-}
+  ignoreHeaders: true,
+};
 
-const client = applyCaseMiddleware(axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:3001/api/v1"
-}), options)
+const client = applyCaseMiddleware(
+  axios.create({
+    baseURL: process.env.REACT_APP_API_URL || "http://localhost:3001/api/v1",
+  }),
+  options
+);
 
+// リクエストインターセプター
 client.interceptors.request.use((config) => {
   const accessToken = Cookies.get("_access_token");
   const clientToken = Cookies.get("_client");
@@ -24,8 +26,31 @@ client.interceptors.request.use((config) => {
     config.headers["access-token"] = accessToken;
     config.headers["client"] = clientToken;
     config.headers["uid"] = uid;
+    config.headers["token-type"] = "Bearer"; // 必要に応じて追加
   }
 
   return config;
 });
-export default client
+
+// **レスポンスインターセプターを追加**
+client.interceptors.response.use(
+  (response) => {
+    // 新しいトークンがレスポンスヘッダーに含まれている場合、クッキーを更新
+    const newAccessToken = response.headers["access-token"];
+    const newClientToken = response.headers["client"];
+    const newUid = response.headers["uid"];
+
+    if (newAccessToken && newClientToken && newUid) {
+      Cookies.set("_access_token", newAccessToken);
+      Cookies.set("_client", newClientToken);
+      Cookies.set("_uid", newUid);
+    }
+
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export default client;
