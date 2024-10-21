@@ -2,7 +2,7 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Search, Settings as SettingsIcon } from "lucide-react";
-import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート
+// import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート(未使用)
 import { AuthContext } from "../App"; // AuthContextをインポート
 import { signOut } from "../lib/api/auth";
 import Cookies from "js-cookie";
@@ -13,6 +13,8 @@ interface HeaderProps {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   setIsSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  todos: Todo[];
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -21,12 +23,12 @@ const Header: React.FC<HeaderProps> = ({
   searchTerm,
   setSearchTerm,
   setIsSettingsOpen,
+  setTodos,
 }) => {
-  const { theme } = useTheme(); // 現在のテーマを取得
+  // const { theme } = useTheme(); // 現在のテーマを取得(未使用)
   const navigate = useNavigate();
 
-  const { loading, isSignedIn, setIsSignedIn, currentUser } =
-    useContext(AuthContext);
+  const { isSignedIn, setIsSignedIn } = useContext(AuthContext);
 
   const handleSignOut = async () => {
     try {
@@ -40,6 +42,7 @@ const Header: React.FC<HeaderProps> = ({
 
         setIsSignedIn(false);
         navigate("/signin");
+        setTodos([]);
 
         console.log("Succeeded in sign out");
       } else {

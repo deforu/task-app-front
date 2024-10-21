@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Todo } from "../interfaces/index";
 import { updateTodo, deleteTodo } from "../lib/api/todos";
-import { useTheme } from "../contexts/ThemeContext";
+// import { useTheme } from "../contexts/ThemeContext";　未使用のためコメントアウト
 
 interface TodoListProps {
   todos: Todo[];
@@ -22,7 +22,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   const [updatedDueDate, setUpdatedDueDate] = useState<string>("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [completingId, setCompletingId] = useState<number | null>(null);
-  const { theme } = useTheme();
+  // const { theme } = useTheme();　未使用のためコメントアウト
 
   const applyFilters = useCallback(() => {
     // console.log("Applying filters:", { filter, searchTerm });
@@ -104,126 +104,117 @@ export const TodoList: React.FC<TodoListProps> = ({
     setDeletingId(null);
   };
 
-  const handleUpdateTodo = async (id: number) => {
-    if (updatedTitle.trim() !== "" && updatedDueDate.trim() !== "") {
-      try {
-        const res = await updateTodo(id, {
-          title: updatedTitle.trim(),
-          dueDate: updatedDueDate,
-        });
-
-        if (res.status === 200 && res.data.todo) {
-          setTodos(
-            todos.map((todo) => (todo.id === id ? res.data.todo : todo))
-          );
-          setEditingId(null);
-          setUpdatedTitle("");
-          setUpdatedDueDate("");
-        } else {
-          console.error("タスクの更新に失敗しました:", res.data.message);
-          alert("タスクの更新に失敗しました。もう一度お試しください。");
-        }
-      } catch (error: any) {
-        if (error.response && error.response.data) {
-          console.error(
-            "タスクの更新に失敗しました:",
-            error.response.data.errors.join(", ")
-          );
-          alert(
-            `タスクの更新に失敗しました: ${error.response.data.errors.join(
-              ", "
-            )}`
-          );
-        } else {
-          console.error("タスクの更新に失敗しました:", error.message);
-          alert("タスクの更新に失敗しました。もう一度お試しください。");
-        }
-      }
-    } else {
-      alert("タイトルと期日を入力してください。");
-    }
-  };
-
-  const handleToggleComplete = (id: number) => {
-    const todoToUpdate = todos.find((todo) => todo.id === id);
-    if (!todoToUpdate) return;
-
-    const newCompletedStatus = !todoToUpdate.completed;
-
-    if (newCompletedStatus) {
-      // タスクを完了にする場合: アニメーションを適用
-      setCompletingId(id);
-      setTimeout(async () => {
+  const handleUpdateTodo = useCallback(
+    async (id: number) => {
+      if (updatedTitle.trim() !== "" && updatedDueDate.trim() !== "") {
         try {
           const res = await updateTodo(id, {
-            completed: newCompletedStatus,
+            title: updatedTitle.trim(),
+            dueDate: updatedDueDate,
           });
+
+          if (res.status === 200 && res.data.todo) {
+            setTodos(
+              todos.map((todo) => (todo.id === id ? res.data.todo : todo))
+            );
+            setEditingId(null);
+            setUpdatedTitle("");
+            setUpdatedDueDate("");
+          } else {
+            console.error("タスクの更新に失敗しました:", res.data.message);
+            alert("タスクの更新に失敗しました。もう一度お試しください。");
+          }
+        } catch (error: any) {
+          if (error.response && error.response.data) {
+            console.error(
+              "タスクの更新に失敗しました:",
+              error.response.data.errors.join(", ")
+            );
+            alert(
+              `タスクの更新に失敗しました: ${error.response.data.errors.join(
+                ", "
+              )}`
+            );
+          } else {
+            console.error("タスクの更新に失敗しました:", error.message);
+            alert("タスクの更新に失敗しました。もう一度お試しください。");
+          }
+        }
+      } else {
+        alert("タイトルと期日を入力してください。");
+      }
+    },
+    [updatedTitle, updatedDueDate, todos, setTodos]
+  );
+
+  const handleToggleComplete = useCallback(
+    async (id: number) => {
+      const todoToUpdate = todos.find((todo) => todo.id === id);
+      if (!todoToUpdate) return;
+
+      const newCompletedStatus = !todoToUpdate.completed;
+
+      if (newCompletedStatus) {
+        // タスクを完了にする場合: アニメーションを適用
+        setCompletingId(id);
+        setTimeout(async () => {
+          await updateTodoStatus(id, newCompletedStatus);
+          setCompletingId(null);
+        }, 800); // 0.8秒の遅延
+      } else {
+        // タスクを未完了にする場合: 即座に状態を更新
+        await updateTodoStatus(id, newCompletedStatus);
+      }
+    },
+    [todos]
+  );
+
+  const handleToggleImportant = useCallback(
+    async (id: number) => {
+      const todoToUpdate = todos.find((todo) => todo.id === id);
+      if (todoToUpdate) {
+        try {
+          const res = await updateTodo(id, {
+            isImportant: !todoToUpdate.isImportant,
+          });
+
           if (res?.status === 200) {
             setTodos(
               todos.map((todo) => (todo.id === id ? res.data.todo : todo))
             );
           } else {
             console.error(
-              "タスクの完了状態の更新に失敗しました:",
+              "タスクの重要フラグの更新に失敗しました:",
               res.data.message
             );
           }
         } catch (error) {
-          console.error("タスクの完了状態の更新に失敗しました:", error);
+          console.error("タスクの重要フラグの更新に失敗しました:", error);
         }
-        setCompletingId(null);
-      }, 800); // 0.8秒の遅延
-    } else {
-      // タスクを未完了にする場合: 即座に状態を更新
-      updateTodo(id, {
-        completed: newCompletedStatus,
-      })
-        .then((res) => {
-          if (res?.status === 200) {
-            setTodos(
-              todos.map((todo) => (todo.id === id ? res.data.todo : todo))
-            );
-          } else {
-            console.error(
-              "タスクの完了状態の更新に失敗しました:",
-              res.data.message
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("タスクの完了状態の更新に失敗しました:", error);
-        });
+      }
+    },
+    [todos, setTodos]
+  );
+
+  const updateTodoStatus = async (id: number, completed: boolean) => {
+    try {
+      const res = await updateTodo(id, { completed });
+      if (res?.status === 200 && res.data.todo) {
+        setTodos(todos.map((todo) => (todo.id === id ? res.data.todo : todo)));
+      } else {
+        console.error(
+          "タスクの完了状態の更新に失敗しました:",
+          res.data.message
+        );
+      }
+    } catch (error) {
+      console.error("タスクの完了状態の更新に失敗しました:", error);
     }
   };
 
   useEffect(() => {
     // console.log("Filtered todos after applying filters:", filteredTodos);
   }, [filteredTodos]);
-
-  const handleToggleImportant = async (id: number) => {
-    const todoToUpdate = todos.find((todo) => todo.id === id);
-    if (todoToUpdate) {
-      try {
-        const res = await updateTodo(id, {
-          isImportant: !todoToUpdate.isImportant,
-        });
-        // console.log("Update response:", res.data); // 追加
-
-        if (res?.status === 200) {
-          setTodos(
-            todos.map((todo) => (todo.id === id ? res.data.todo : todo))
-          );
-        } else {
-          console.error(
-            "タスクの重要フラグの更新に失敗しました:",
-            res.data.message
-          );
-        }
-      } catch (error) {
-        console.error("タスクの重要フラグの更新に失敗しました:", error);
-      }
-    }
-  };
 
   const getTodoTextColor = (todo: Todo) => {
     if (todo.completed) return "text-light-text dark:text-dark-text";
@@ -349,7 +340,15 @@ export const TodoList: React.FC<TodoListProps> = ({
         </div>
       </li>
     ),
-    [completingId, editingId, updatedTitle, updatedDueDate]
+    [
+      completingId,
+      editingId,
+      updatedTitle,
+      updatedDueDate,
+      handleToggleComplete,
+      handleToggleImportant,
+      handleUpdateTodo,
+    ]
   );
 
   return (

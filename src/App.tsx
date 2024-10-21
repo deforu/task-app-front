@@ -8,8 +8,6 @@ import {
   Link,
 } from "react-router-dom";
 
-import CommonLayout from "./components/layouts/CommonLayout";
-import Home from "./components/pages/Home";
 import SignUp from "./components/pages/SignUp";
 import SignIn from "./components/pages/SignIn";
 
@@ -153,6 +151,8 @@ const App: React.FC = () => {
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               setIsSettingsOpen={setIsSettingsOpen}
+              todos={todos}
+              setTodos={setTodos}
             />
             <div className="flex flex-1">
               {isSignedIn && (
