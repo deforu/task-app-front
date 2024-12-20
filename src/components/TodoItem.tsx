@@ -3,17 +3,20 @@ import React, { useState } from "react";
 import { deleteTodo, updateTodo } from "../lib/api/todos";
 import { Todo } from "../interfaces/index";
 
+// TodoItemコンポーネントのPropsの型定義
 interface TodoItemProps {
   todo: Todo;
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
 }
 
+// TodoItemコンポーネント
 export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState(todo.title);
-  const [dueDate, setDueDate] = useState(todo.dueDate || "");
-  const [isImportant, setIsImportant] = useState(todo.isImportant);
+  const [isEditing, setIsEditing] = useState(false); // 編集中かどうかのフラグ
+  const [title, setTitle] = useState(todo.title); // タイトル
+  const [dueDate, setDueDate] = useState(todo.dueDate || ""); // 期限日
+  const [isImportant, setIsImportant] = useState(todo.isImportant); // 重要フラグ
 
+  // Todoの削除処理
   const handleDeleteTodo = async (id: number) => {
     try {
       const res = await deleteTodo(id);
@@ -27,6 +30,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
     }
   };
 
+  // Todoの更新処理
   const handleUpdateTodo = async () => {
     try {
       const updatedTodo = {
@@ -49,6 +53,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
     }
   };
 
+  // Todoの完了状態の更新処理
   const toggleComplete = async () => {
     try {
       const updatedTodo = { ...todo, completed: !todo.completed };
@@ -65,6 +70,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
     }
   };
 
+  // 重要フラグの更新処理
   const toggleImportant = async () => {
     try {
       const updatedTodo = { ...todo, isImportant: !todo.isImportant };
@@ -81,6 +87,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
     }
   };
 
+  // TodoItemコンポーネントの描画
   return (
     <tr className="border-b">
       <td className="py-2 px-4">

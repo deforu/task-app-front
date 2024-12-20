@@ -10,16 +10,16 @@ import {
 
 import SignUp from "./components/pages/SignUp";
 import SignIn from "./components/pages/SignIn";
+import Header from "./components/Header";
+import Notifications from "./components/Notifications";
+import Settings from "./components/Settings";
+import Modal from "./components/Modal";
 
 import { getCurrentUser } from "./lib/api/auth";
 import { User } from "./interfaces/index";
 
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Header from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
-import Notifications from "./components/Notifications";
-import Settings from "./components/Settings";
-import Modal from "./components/Modal";
 import { getTodos } from "./lib/api/todos";
 import { Todo } from "./interfaces/index";
 import { Home as HomeIcon, Bell, Settings as SettingsIcon } from "lucide-react";
@@ -69,9 +69,17 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
+  // ユーザー情報を取得
   useEffect(() => {
     handleGetCurrentUser();
   }, []);
+
+  // 認証状態が変更されたときにTodoリストを取得
+  useEffect(() => {
+    if (isSignedIn) {
+      handleGetTodos();
+    }
+  }, [isSignedIn]);
 
   // Todoリストを取得
   const handleGetTodos = async () => {
@@ -98,12 +106,6 @@ const App: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (isSignedIn) {
-      handleGetTodos();
-    }
-  }, [isSignedIn]);
-
   // ユーザーが認証済みかどうかでルーティングを決定
   // 未認証だった場合は「/signin」ページにリダイレクト
   const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
@@ -113,7 +115,7 @@ const App: React.FC = () => {
       return <></>;
     }
   };
-
+  // Todoリストのコンテンツ (TodoForm, TodoList) をまとめたコンポーネント
   const TodoContent = () => (
     <>
       <div className="hidden md:block">
@@ -130,7 +132,7 @@ const App: React.FC = () => {
       </div>
     </>
   );
-
+  // ルーティング (React Router v6) の設定
   return (
     <AuthContext.Provider
       value={{

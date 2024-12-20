@@ -24,13 +24,14 @@ export const TodoList: React.FC<TodoListProps> = ({
   const [completingId, setCompletingId] = useState<number | null>(null);
   // const { theme } = useTheme();　未使用のためコメントアウト
 
+  // フィルタリング処理
   const applyFilters = useCallback(() => {
     // console.log("Applying filters:", { filter, searchTerm });
     // console.log("Original todos:", todos);
 
-    let updatedTodos = [...todos];
+    let updatedTodos = [...todos]; // オリジナルのタスクリストをコピー
 
-    // フィルタリング
+    // タスクの状態によってフィルタリングし、更新されたタスクリストをセット・表示
     switch (filter) {
       case "today":
         const today = new Date().toISOString().split("T")[0];
@@ -59,7 +60,7 @@ export const TodoList: React.FC<TodoListProps> = ({
         todo.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
+    // 作成日の降順でソート
     updatedTodos.sort((a: Todo, b: Todo) => {
       if (a.created_at && b.created_at) {
         return (
@@ -74,14 +75,21 @@ export const TodoList: React.FC<TodoListProps> = ({
     setFilteredTodos(updatedTodos);
   }, [todos, filter, searchTerm]);
 
+  // フィルターの変更時に再度フィルタリングを適用
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
 
+  // フィルタリング後のタスクリストの変更を監視
+  useEffect(() => {
+    // console.log("Filtered todos after applying filters:", filteredTodos);
+  }, [filteredTodos]);
+
+  // 削除処理
   const handleDeleteTodo = (id: number) => {
     setDeletingId(id);
   };
-
+  // 削除確認
   const confirmDelete = async () => {
     if (deletingId !== null) {
       try {
@@ -99,11 +107,11 @@ export const TodoList: React.FC<TodoListProps> = ({
       }
     }
   };
-
+  // 削除キャンセル
   const cancelDelete = () => {
     setDeletingId(null);
   };
-
+  // タスクの更新処理
   const handleUpdateTodo = useCallback(
     async (id: number) => {
       if (updatedTitle.trim() !== "" && updatedDueDate.trim() !== "") {
@@ -146,7 +154,7 @@ export const TodoList: React.FC<TodoListProps> = ({
     },
     [updatedTitle, updatedDueDate, todos, setTodos]
   );
-
+  // タスクの完了状態の更新
   const handleToggleComplete = useCallback(
     async (id: number) => {
       const todoToUpdate = todos.find((todo) => todo.id === id);
@@ -168,7 +176,7 @@ export const TodoList: React.FC<TodoListProps> = ({
     },
     [todos]
   );
-
+  // 重要フラグのトグル
   const handleToggleImportant = useCallback(
     async (id: number) => {
       const todoToUpdate = todos.find((todo) => todo.id === id);
@@ -195,7 +203,7 @@ export const TodoList: React.FC<TodoListProps> = ({
     },
     [todos, setTodos]
   );
-
+  // タスクの完了状態の更新
   const updateTodoStatus = async (id: number, completed: boolean) => {
     try {
       const res = await updateTodo(id, { completed });
@@ -211,16 +219,13 @@ export const TodoList: React.FC<TodoListProps> = ({
       console.error("タスクの完了状態の更新に失敗しました:", error);
     }
   };
-
-  useEffect(() => {
-    // console.log("Filtered todos after applying filters:", filteredTodos);
-  }, [filteredTodos]);
-
+  // タスクのテキストカラーを取得
   const getTodoTextColor = (todo: Todo) => {
     if (todo.completed) return "text-light-text dark:text-dark-text";
     return "text-light-text dark:text-dark-text";
   };
 
+  // タスクアイテムのレンダリング
   const renderTodoItem = useCallback(
     (todo: Todo) => (
       <li
@@ -351,6 +356,7 @@ export const TodoList: React.FC<TodoListProps> = ({
     ]
   );
 
+  // レンダリング
   return (
     <div className="text-light-text dark:text-dark-text">
       <ul className="list-none p-5">

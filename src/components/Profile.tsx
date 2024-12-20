@@ -1,12 +1,14 @@
-// Profile.tsx
+// Profile.tsx このファイルは不要なので削除予定
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../App";
 
+// プロフィールコンポーネント
 const Profile: React.FC = () => {
   const { currentUser } = useContext(AuthContext);
   const [image, setImage] = useState("");
   const [isSaved, setIsSaved] = useState(false);
 
+  // プロフィール画像の読み込み
   useEffect(() => {
     const savedProfile = localStorage.getItem("userProfile");
     if (savedProfile) {
@@ -15,6 +17,7 @@ const Profile: React.FC = () => {
     }
   }, []);
 
+  // 画像の変更処理
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -26,6 +29,7 @@ const Profile: React.FC = () => {
     }
   };
 
+  // プロフィールの保存処理
   const saveProfile = () => {
     const profile = { image };
     localStorage.setItem("userProfile", JSON.stringify(profile));
@@ -33,6 +37,7 @@ const Profile: React.FC = () => {
     setTimeout(() => setIsSaved(false), 2000);
   };
 
+  // プロフィールコンポーネントの描画
   return (
     <div className="p-4 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-4">プロフィール</h2>

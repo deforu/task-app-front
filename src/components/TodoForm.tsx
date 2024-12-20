@@ -9,6 +9,7 @@ interface TodoFormProps {
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
 }
 
+// TodoFormコンポーネント
 export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   const [title, setTitle] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
@@ -17,15 +18,17 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   const dateInputRef = useRef<HTMLInputElement>(null);
   const { theme } = useTheme();
 
+  // コンポーネントがマウントされたときに今日の日付を設定
   useEffect(() => {
-    // コンポーネントがマウントされたときに今日の日付を設定
     const today = new Date().toISOString().split("T")[0];
     setDueDate(today);
   }, []);
 
+  // Todoの作成処理 (非同期)  ここでAPIを叩いている 日付のリセットはせず、今日の日付のままにする
   const handleCreateTodo = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // タイトルが空の場合は処理を中断 (trim() で前後の空白を削除) ここでタイトル、日付、重要度、完了状態を設定している
     const data = {
       title: title.trim(),
       completed: false,
@@ -36,9 +39,9 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
     try {
       const res = await createTodo(data);
       if (res.status === 200) {
-        setTodos([res.data.todo, ...todos]);
-        setTitle("");
-        setIsImportant(false);
+        setTodos([res.data.todo, ...todos]); // 新しいTodoを配列の先頭に追加
+        setTitle(""); // タイトル入力をクリア
+        setIsImportant(false); // 重要フラグをリセット
         // 日付はリセットせず、今日の日付のままにする
       } else {
         console.error(res.data.message);
@@ -49,6 +52,7 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
     }
   };
 
+  // ここでフォームを作成している
   return (
     <div className="sticky top-16 bg-light-input dark:bg-dark-card shadow-md z-20 p-4 relative">
       <div className="w-full max-w-2xl mx-auto">
@@ -62,9 +66,10 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
               onChange={(e) => setTitle(e.target.value)}
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
+              {/* ここで日付と重要度を設定している */}
               <button
                 type="button"
-                onClick={() => setShowDatePicker(!showDatePicker)}
+                onClick={() => setShowDatePicker(!showDatePicker)} // 日付
                 className="p-1 text-light-text dark:text-dark-text hover:text-blue-700"
               >
                 <svg

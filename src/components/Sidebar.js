@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート
 
+// SidebarProps型を定義
 interface SidebarProps {
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   searchTerm: string;
@@ -11,6 +12,7 @@ interface SidebarProps {
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+// Sidebarコンポーネント
 export const Sidebar: React.FC<SidebarProps> = ({
   setFilter,
   searchTerm,
@@ -21,12 +23,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
   const { theme } = useTheme(); // 現在のテーマを取得
 
+  // フィルターをクリックしたときの処理
   const handleFilterClick = (filter: string) => {
     setFilter(filter);
     setIsMenuOpen(false);
     navigate(`/?filter=${filter}`);
   };
 
+  // ボタンのクラスを取得、フィルターがアクティブなときは背景色を変更
   const getButtonClass = (filter: string) => {
     const params = new URLSearchParams(location.search);
     const activeFilter = params.get("filter") || "all";
@@ -37,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     } p-2 rounded transition-colors`;
   };
 
+  // Sidebarコンポーネントの描画
   return (
     <div className="p-4 h-full bg-light-card dark:bg-dark-card">
       <div className="hidden md:block mb-4">

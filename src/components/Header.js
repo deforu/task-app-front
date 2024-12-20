@@ -7,6 +7,7 @@ import { AuthContext } from "../App"; // AuthContextをインポート
 import { signOut } from "../lib/api/auth";
 import Cookies from "js-cookie";
 
+// Todo型をインポート
 interface HeaderProps {
   isMenuOpen: boolean;
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,6 +18,7 @@ interface HeaderProps {
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
 }
 
+// Headerコンポーネント
 const Header: React.FC<HeaderProps> = ({
   isMenuOpen,
   setIsMenuOpen,
@@ -28,8 +30,10 @@ const Header: React.FC<HeaderProps> = ({
   // const { theme } = useTheme(); // 現在のテーマを取得(未使用)
   const navigate = useNavigate();
 
+  // AuthContextからisSignedInとsetIsSignedInを受け取る
   const { isSignedIn, setIsSignedIn } = useContext(AuthContext);
 
+  // サインアウト処理
   const handleSignOut = async () => {
     try {
       const res = await signOut();
@@ -53,6 +57,7 @@ const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  // Headerコンポーネントの描画
   return (
     <header className="fixed top-0 left-0 right-0 bg-light-header dark:bg-dark-header text-white p-4 shadow-md z-40">
       <div className="container mx-auto flex justify-between items-center">

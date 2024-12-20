@@ -6,6 +6,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { signOut } from "../lib/api/auth";
 import Cookies from "js-cookie";
 
+// プロフィールコンポーネント
 const Profile: React.FC = () => {
   const { currentUser, setIsSignedIn } = useContext(AuthContext);
   const { theme, fontSize, setTheme, setFontSize } = useTheme();
@@ -15,6 +16,7 @@ const Profile: React.FC = () => {
   const [isSaved, setIsSaved] = useState(false);
   const navigate = useNavigate();
 
+  // プロフィール画像の読み込み
   useEffect(() => {
     const savedProfile = localStorage.getItem("userProfile");
     if (savedProfile) {
@@ -25,12 +27,14 @@ const Profile: React.FC = () => {
       setName(currentUser?.name || "");
     }
 
+    // 通知の設定の読み込み
     const savedNotifications = localStorage.getItem("notifications");
     if (savedNotifications) {
       setNotifications(JSON.parse(savedNotifications));
     }
   }, [currentUser]);
 
+  // 画像の変更処理
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -42,6 +46,7 @@ const Profile: React.FC = () => {
     }
   };
 
+  // 変更の保存処理
   const saveChanges = () => {
     const profile = { name, image };
     localStorage.setItem("userProfile", JSON.stringify(profile));
@@ -51,6 +56,7 @@ const Profile: React.FC = () => {
     setTimeout(() => setIsSaved(false), 2000);
   };
 
+  // サインアウト処理
   const handleSignOut = async () => {
     try {
       const res = await signOut();
@@ -73,6 +79,7 @@ const Profile: React.FC = () => {
     }
   };
 
+  // プロフィールコンポーネントの描画
   return (
     <div className="p-4 card shadow-md rounded-lg text-light-text dark:text-dark-text">
       <h2 className="text-2xl font-bold mb-4">プロフィールと設定</h2>

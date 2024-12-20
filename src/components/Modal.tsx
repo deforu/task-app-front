@@ -2,15 +2,17 @@
 import React from "react";
 import { X } from "lucide-react";
 
+// ModalコンポーネントのPropsの型定義
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
 }
 
+// Modalコンポーネント
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
-
+  // モーダルの表示
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-black bg-opacity-50">
       <div className="relative w-full max-w-4xl mx-auto my-6 px-4">
