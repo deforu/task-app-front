@@ -7,13 +7,13 @@ import {
   Navigate,
   Link,
 } from "react-router-dom";
-
 import SignUp from "./components/pages/SignUp";
 import SignIn from "./components/pages/SignIn";
 import Header from "./components/Header";
 import Notifications from "./components/Notifications";
 import Settings from "./components/Settings";
 import Modal from "./components/Modal";
+// import UserAvatar from "./components/pages/UserAvatar";
 
 import { getCurrentUser } from "./lib/api/auth";
 import { User } from "./interfaces/index";

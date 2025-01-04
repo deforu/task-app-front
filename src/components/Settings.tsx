@@ -1,102 +1,130 @@
-// Settings.tsx
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 import { useTheme } from "../contexts/ThemeContext";
 import { signOut } from "../lib/api/auth";
+import axios from "axios";
 import Cookies from "js-cookie";
 
-// プロフィールコンポーネント
-const Profile: React.FC = () => {
+const Settings: React.FC = () => {
   const { currentUser, setIsSignedIn } = useContext(AuthContext);
   const { theme, fontSize, setTheme, setFontSize } = useTheme();
   const [name, setName] = useState("");
-  const [image, setImage] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
 
-  // プロフィール画像の読み込み
+  // ユーザー情報を取得
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3001/api/v1/users/me",
+        {
+          headers: {
+            "access-token": Cookies.get("_access_token") || "",
+            client: Cookies.get("_client") || "",
+            uid: Cookies.get("_uid") || "",
+          },
+        }
+      );
+      setUser(response.data);
+      setName(response.data.name);
+      setPreview(response.data.avatar_url || "/default-avatar.png");
+    } catch (error) {
+      console.error("ユーザー情報の取得に失敗しました:", error);
+    }
+  };
+
   useEffect(() => {
-    const savedProfile = localStorage.getItem("userProfile");
-    if (savedProfile) {
-      const { name, image } = JSON.parse(savedProfile);
-      setName(name || currentUser?.name || "");
-      setImage(image);
-    } else {
-      setName(currentUser?.name || "");
-    }
+    fetchUser();
+  }, []);
 
-    // 通知の設定の読み込み
-    const savedNotifications = localStorage.getItem("notifications");
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications));
-    }
-  }, [currentUser]);
-
-  // 画像の変更処理
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  // ファイル選択時に実行
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
     }
   };
 
-  // 変更の保存処理
-  const saveChanges = () => {
-    const profile = { name, image };
-    localStorage.setItem("userProfile", JSON.stringify(profile));
-    localStorage.setItem("notifications", JSON.stringify(notifications));
+  // 変更の保存
+  const saveChanges = async () => {
+    try {
+      if (file) {
+        const formData = new FormData();
+        formData.append("user[avatar]", file);
 
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+        await axios.put(
+          `http://localhost:3001/api/v1/users/${user.id}/avatar`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "access-token": Cookies.get("_access_token") || "",
+              client: Cookies.get("_client") || "",
+              uid: Cookies.get("_uid") || "",
+            },
+          }
+        );
+      }
+
+      const response = await axios.get(
+        "http://localhost:3001/api/v1/users/me",
+        {
+          headers: {
+            "access-token": Cookies.get("_access_token") || "",
+            client: Cookies.get("_client") || "",
+            uid: Cookies.get("_uid") || "",
+          },
+        }
+      );
+
+      setUser(response.data); // ユーザー情報を更新
+      setPreview(response.data.avatar_url || "/default-avatar.png");
+      console.log("変更を保存しました！");
+    } catch (error) {
+      console.error("変更の保存に失敗しました:", error);
+      console.error("変更の保存に失敗しました。");
+    }
   };
 
-  // サインアウト処理
+  // サインアウト
   const handleSignOut = async () => {
     try {
       const res = await signOut();
-
       if (res.data.success === true) {
-        // サインアウト時には各Cookieを削除
         Cookies.remove("_access_token");
         Cookies.remove("_client");
         Cookies.remove("_uid");
-
         setIsSignedIn(false);
         navigate("/signin");
-
-        console.log("Succeeded in sign out");
-      } else {
-        console.log("Failed in sign out");
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
-  // プロフィールコンポーネントの描画
   return (
     <div className="p-4 card shadow-md rounded-lg text-light-text dark:text-dark-text">
       <h2 className="text-2xl font-bold mb-4">プロフィールと設定</h2>
       <div className="space-y-4">
         <div>
           <label className="block mb-2">プロフィール画像:</label>
-          {image && (
+          {preview && (
             <img
-              src={image}
+              src={preview}
               alt="Profile"
-              className="w-32 h-32 object-cover rounded-full"
+              className="w-32 h-32 object-cover rounded-full border-2 border-black"
             />
           )}
           <input
             type="file"
             accept="image/*"
-            onChange={handleImageChange}
+            onChange={handleFileChange}
             className="mt-2"
           />
         </div>
@@ -104,17 +132,8 @@ const Profile: React.FC = () => {
           <label className="block mb-2">名前:</label>
           <input
             type="text"
-            value={currentUser?.name || ""}
+            value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border rounded bg-gray-100 text-light-text"
-          />
-        </div>
-        <div>
-          <label className="block mb-2">メールアドレス:</label>
-          <input
-            type="email"
-            value={currentUser?.email || ""}
-            readOnly
             className="w-full p-2 border rounded bg-gray-100 text-light-text"
           />
         </div>
@@ -155,7 +174,6 @@ const Profile: React.FC = () => {
           </label>
         </div>
       </div>
-
       <div className="mt-8">
         <button
           onClick={saveChanges}
@@ -168,7 +186,6 @@ const Profile: React.FC = () => {
           {isSaved ? "保存しました！" : "変更を保存"}
         </button>
       </div>
-
       <div className="mt-4">
         <button
           onClick={handleSignOut}
@@ -181,4 +198,4 @@ const Profile: React.FC = () => {
   );
 };
 
-export default Profile;
+export default Settings;

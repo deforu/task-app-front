@@ -1,30 +1,37 @@
-// Header.js
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Search, Settings as SettingsIcon } from "lucide-react";
 // import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート(未使用)
 import { AuthContext } from "../App"; // AuthContextをインポート
 import { signOut } from "../lib/api/auth";
 import Cookies from "js-cookie";
+import axios from "axios";
 
-// Todo型をインポート
-interface HeaderProps {
-  isMenuOpen: boolean;
-  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  searchTerm: string;
-  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  setIsSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  todos: Todo[];
-  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+// Todo型を明示
+interface Todo {
+  id: number;
+  title: string;
+  completed: boolean;
 }
 
-// Headerコンポーネント
+// // Props型定義
+// interface HeaderProps {
+//   isMenuOpen: boolean;
+//   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+//   searchTerm: string;
+//   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+//   setIsSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+//   todos: Todo[];
+//   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+// }
+
 const Header: React.FC<HeaderProps> = ({
   isMenuOpen,
   setIsMenuOpen,
   searchTerm,
   setSearchTerm,
   setIsSettingsOpen,
+  todos,
   setTodos,
 }) => {
   // const { theme } = useTheme(); // 現在のテーマを取得(未使用)
@@ -32,28 +39,45 @@ const Header: React.FC<HeaderProps> = ({
 
   // AuthContextからisSignedInとsetIsSignedInを受け取る
   const { isSignedIn, setIsSignedIn } = useContext(AuthContext);
+  const [userAvatar, setUserAvatar] = useState("/default-avatar.png");
 
-  // サインアウト処理
+  // ユーザーのアイコンを取得
+  const fetchUserAvatar = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3001/api/v1/users/me",
+        {
+          headers: {
+            "access-token": Cookies.get("_access_token") || "",
+            client: Cookies.get("_client") || "",
+            uid: Cookies.get("_uid") || "",
+          },
+        }
+      );
+      setUserAvatar(response.data.avatar_url || "/default-avatar.png");
+    } catch (error) {
+      console.error("アイコンの取得に失敗しました:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isSignedIn) fetchUserAvatar();
+  }, [isSignedIn]);
+
   const handleSignOut = async () => {
     try {
       const res = await signOut();
-
       if (res.data.success === true) {
         // サインアウト時には各Cookieを削除
         Cookies.remove("_access_token");
         Cookies.remove("_client");
         Cookies.remove("_uid");
-
         setIsSignedIn(false);
         navigate("/signin");
         setTodos([]);
-
-        console.log("Succeeded in sign out");
-      } else {
-        console.log("Failed in sign out");
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -102,6 +126,11 @@ const Header: React.FC<HeaderProps> = ({
                   設定
                   <SettingsIcon className="ml-1" size={18} />
                 </button>
+                <img
+                  src={userAvatar}
+                  alt="User Avatar"
+                  className="w-8 h-8 rounded-full border"
+                />
                 <button onClick={handleSignOut} className="hover:text-blue-200">
                   ログアウト
                 </button>
