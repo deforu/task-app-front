@@ -129,7 +129,8 @@ const Header: React.FC<HeaderProps> = ({
                 <img
                   src={userAvatar}
                   alt="User Avatar"
-                  className="w-8 h-8 rounded-full border"
+                  className="w-8 h-8 rounded-full border border-white"
+                  style={{ objectFit: "cover" }}
                 />
                 <button onClick={handleSignOut} className="hover:text-blue-200">
                   ログアウト
