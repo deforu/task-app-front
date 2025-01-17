@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 import { useTheme } from "../contexts/ThemeContext";
 import { signOut } from "../lib/api/auth";
-import axios from "axios";
 import Cookies from "js-cookie";
+import client from "../lib/api/client";
 
 const Settings: React.FC = () => {
-  const { currentUser, setIsSignedIn } = useContext(AuthContext);
+  // AuthContext から currentUser, setCurrentUser, fetchCurrentUser, setIsSignedIn を取得
+  const { currentUser, setCurrentUser, fetchCurrentUser, setIsSignedIn } =
+    useContext(AuthContext);
+
   const { theme, fontSize, setTheme, setFontSize } = useTheme();
   const [name, setName] = useState("");
   const [notifications, setNotifications] = useState(true);
@@ -15,32 +18,14 @@ const Settings: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
 
-  // ユーザー情報を取得
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:3001/api/v1/users/me",
-        {
-          headers: {
-            "access-token": Cookies.get("_access_token") || "",
-            client: Cookies.get("_client") || "",
-            uid: Cookies.get("_uid") || "",
-          },
-        }
-      );
-      setUser(response.data);
-      setName(response.data.name);
-      setPreview(response.data.avatar_url || "/default-avatar.png");
-    } catch (error) {
-      console.error("ユーザー情報の取得に失敗しました:", error);
-    }
-  };
-
+  // (1) マウント時 or currentUser の変化時にローカルの name, preview を更新
   useEffect(() => {
-    fetchUser();
-  }, []);
+    if (currentUser) {
+      setName(currentUser.name || "");
+      setPreview(currentUser.avatarUrl || "/default-avatar.png");
+    }
+  }, [currentUser]);
 
   // ファイル選択時に実行
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,41 +39,28 @@ const Settings: React.FC = () => {
   // 変更の保存
   const saveChanges = async () => {
     try {
-      if (file) {
+      if (file && currentUser) {
         const formData = new FormData();
         formData.append("user[avatar]", file);
 
-        await axios.put(
-          `http://localhost:3001/api/v1/users/${user.id}/avatar`,
+        const putRes = await client.put(
+          `/users/${currentUser.id}/avatar`,
           formData,
           {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              "access-token": Cookies.get("_access_token") || "",
-              client: Cookies.get("_client") || "",
-              uid: Cookies.get("_uid") || "",
-            },
+            headers: { "Content-Type": "multipart/form-data" },
           }
         );
+        console.log("PUT /users/:id/avatar のレスポンス", putRes.data);
       }
 
-      const response = await axios.get(
-        "http://localhost:3001/api/v1/users/me",
-        {
-          headers: {
-            "access-token": Cookies.get("_access_token") || "",
-            client: Cookies.get("_client") || "",
-            uid: Cookies.get("_uid") || "",
-          },
-        }
-      );
-
-      setUser(response.data); // ユーザー情報を更新
-      setPreview(response.data.avatar_url || "/default-avatar.png");
-      console.log("変更を保存しました！");
+      // 再取得
+      const response = await client.get("/users/me");
+      console.log("GET /users/me のレスポンス", response.data); // ← ココ重要
+      setCurrentUser(response.data);
+      setPreview(null);
+      setIsSaved(true);
     } catch (error) {
       console.error("変更の保存に失敗しました:", error);
-      console.error("変更の保存に失敗しました。");
     }
   };
 
@@ -114,13 +86,11 @@ const Settings: React.FC = () => {
       <div className="space-y-4">
         <div>
           <label className="block mb-2">プロフィール画像:</label>
-          {preview && (
-            <img
-              src={preview}
-              alt="Profile"
-              className="w-32 h-32 object-cover rounded-full border-2 border-black"
-            />
-          )}
+          <img
+            src={preview || "/default-avatar.png"}
+            alt="Profile"
+            className="w-32 h-32 object-cover rounded-full border-2 border-black"
+          />
           <input
             type="file"
             accept="image/*"
@@ -128,6 +98,7 @@ const Settings: React.FC = () => {
             className="mt-2"
           />
         </div>
+
         <div>
           <label className="block mb-2">名前:</label>
           <input
@@ -137,6 +108,7 @@ const Settings: React.FC = () => {
             className="w-full p-2 border rounded bg-gray-100 text-light-text"
           />
         </div>
+
         <div>
           <label className="block mb-2">テーマ:</label>
           <select
@@ -148,6 +120,7 @@ const Settings: React.FC = () => {
             <option value="dark">ダーク</option>
           </select>
         </div>
+
         <div>
           <label className="block mb-2">フォントサイズ:</label>
           <select
@@ -162,6 +135,7 @@ const Settings: React.FC = () => {
             <option value="large">大</option>
           </select>
         </div>
+
         <div>
           <label className="flex items-center">
             <input
@@ -174,6 +148,7 @@ const Settings: React.FC = () => {
           </label>
         </div>
       </div>
+
       <div className="mt-8">
         <button
           onClick={saveChanges}
@@ -186,6 +161,7 @@ const Settings: React.FC = () => {
           {isSaved ? "保存しました！" : "変更を保存"}
         </button>
       </div>
+
       <div className="mt-4">
         <button
           onClick={handleSignOut}

@@ -15,6 +15,7 @@ import { AuthContext } from "../../App";
 import AlertMessage from "../utils/AlertMessage";
 import { signIn } from "../../lib/api/auth";
 import { SignInParams } from "../../interfaces/index";
+import client from "../../lib/api/client";
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -49,7 +50,8 @@ const SignIn: React.FC = () => {
   const classes = useStyles();
   const navigate = useNavigate();
 
-  const { setIsSignedIn, setCurrentUser } = useContext(AuthContext);
+  const { setIsSignedIn, setCurrentUser, fetchCurrentUser } =
+    useContext(AuthContext);
 
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -74,8 +76,11 @@ const SignIn: React.FC = () => {
         Cookies.set("_uid", res.headers["uid"]);
 
         setIsSignedIn(true);
-        setCurrentUser(res.data.data);
-
+        // setCurrentUser(res.data.data); // ログイン時の画像更新の為  コメントアウト
+        await fetchCurrentUser(); // ログイン時の画像更新の為  追加
+        const response = await client.get("/users/me"); // ログイン時の画像更新の為  追加
+        console.log("GET /users/me のレスポンス", response.data); // ログイン時の画像更新の為  追加
+        setCurrentUser(response.data); // ログイン時の画像更新の為  追加
         navigate("/");
 
         console.log("Signed in successfully!");

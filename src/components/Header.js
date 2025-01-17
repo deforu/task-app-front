@@ -1,31 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Search, Settings as SettingsIcon } from "lucide-react";
-// import { useTheme } from "../contexts/ThemeContext"; // ThemeContextをインポート(未使用)
-import { AuthContext } from "../App"; // AuthContextをインポート
+import { AuthContext } from "../App";
 import { signOut } from "../lib/api/auth";
 import Cookies from "js-cookie";
-import axios from "axios";
 
-// Todo型を明示
-interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-}
-
-// // Props型定義
-// interface HeaderProps {
-//   isMenuOpen: boolean;
-//   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-//   searchTerm: string;
-//   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-//   setIsSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-//   todos: Todo[];
-//   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
-// }
-
-const Header: React.FC<HeaderProps> = ({
+const Header = ({
   isMenuOpen,
   setIsMenuOpen,
   searchTerm,
@@ -34,35 +14,9 @@ const Header: React.FC<HeaderProps> = ({
   todos,
   setTodos,
 }) => {
-  // const { theme } = useTheme(); // 現在のテーマを取得(未使用)
   const navigate = useNavigate();
-
-  // AuthContextからisSignedInとsetIsSignedInを受け取る
-  const { isSignedIn, setIsSignedIn } = useContext(AuthContext);
-  const [userAvatar, setUserAvatar] = useState("/default-avatar.png");
-
-  // ユーザーのアイコンを取得
-  const fetchUserAvatar = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:3001/api/v1/users/me",
-        {
-          headers: {
-            "access-token": Cookies.get("_access_token") || "",
-            client: Cookies.get("_client") || "",
-            uid: Cookies.get("_uid") || "",
-          },
-        }
-      );
-      setUserAvatar(response.data.avatar_url || "/default-avatar.png");
-    } catch (error) {
-      console.error("アイコンの取得に失敗しました:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (isSignedIn) fetchUserAvatar();
-  }, [isSignedIn]);
+  const { isSignedIn, setIsSignedIn, currentUser, setCurrentUser } =
+    useContext(AuthContext);
 
   const handleSignOut = async () => {
     try {
@@ -73,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({
         Cookies.remove("_client");
         Cookies.remove("_uid");
         setIsSignedIn(false);
+        setCurrentUser(undefined); // サインアウト時にアイコン画像を空にする
         navigate("/signin");
         setTodos([]);
       }
@@ -127,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({
                   <SettingsIcon className="ml-1" size={18} />
                 </button>
                 <img
-                  src={userAvatar}
+                  src={currentUser?.avatarUrl || "/default-avatar.png"}
                   alt="User Avatar"
                   className="w-8 h-8 rounded-full border border-white"
                   style={{ objectFit: "cover" }}

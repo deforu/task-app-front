@@ -9,18 +9,21 @@ const options = {
   ignoreHeaders: true,
 };
 
+// process.env.REACT_APP_API_URL は環境変数からAPIのURLを取得。なければ右のデフォルト値を使用。
 const client = applyCaseMiddleware(
   axios.create({
     baseURL: process.env.REACT_APP_API_URL || "http://localhost:3001/api/v1",
   }),
   options
 );
+//----------------------------------
 
-// リクエストインターセプター
+// 以下は認証用のインターセプター　リクエストとレスポンスの間に割り込む
 client.interceptors.request.use((config) => {
   const accessToken = Cookies.get("_access_token");
   const clientToken = Cookies.get("_client");
   const uid = Cookies.get("_uid");
+  
 
   if (accessToken && clientToken && uid) {
     config.headers["access-token"] = accessToken;

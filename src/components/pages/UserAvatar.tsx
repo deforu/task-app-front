@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Cookies from "js-cookie";
+import client from "../../lib/api/client";
 
 const UserAvatar = () => {
   const [user, setUser] = useState<any>(null);
@@ -10,16 +10,7 @@ const UserAvatar = () => {
   // ユーザー情報を取得
   const fetchUser = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:3001/api/v1/users/me",
-        {
-          headers: {
-            "access-token": Cookies.get("_access_token") || "",
-            client: Cookies.get("_client") || "",
-            uid: Cookies.get("_uid") || "",
-          },
-        }
-      );
+      const response = await client.get("/users/me");
       setUser(response.data);
     } catch (error) {
       console.error("ユーザー情報の取得に失敗しました:", error);
@@ -51,18 +42,12 @@ const UserAvatar = () => {
     formData.append("user[avatar]", file);
 
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/v1/users/${user.id}/avatar`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "access-token": Cookies.get("_access_token") || "",
-            client: Cookies.get("_client") || "",
-            uid: Cookies.get("_uid") || "",
-          },
-        }
-      );
+      const response = await client.put(`/users/${user.id}/avatar`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setPreview(null);
       alert("アップロードに成功しました！");
       setPreview(null);
       fetchUser(); // 更新後に再取得
@@ -99,7 +84,7 @@ const UserAvatar = () => {
       <div>
         <h3>アイコンプレビュー</h3>
         <img
-          src={preview || user?.avatar_url || "/default-avatar.png"}
+          src={preview || user?.avatarUrl || "/default-avatar.png"}
           alt="User Avatar"
           width={150}
           height={150}

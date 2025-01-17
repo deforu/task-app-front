@@ -13,7 +13,6 @@ import Header from "./components/Header";
 import Notifications from "./components/Notifications";
 import Settings from "./components/Settings";
 import Modal from "./components/Modal";
-// import UserAvatar from "./components/pages/UserAvatar";
 
 import { getCurrentUser } from "./lib/api/auth";
 import { User } from "./interfaces/index";
@@ -26,8 +25,9 @@ import { Home as HomeIcon, Bell, Settings as SettingsIcon } from "lucide-react";
 
 import { TodoForm } from "./components/TodoForm";
 import { TodoList } from "./components/TodoList";
+import client from "./lib/api/client";
 
-// グローバルで扱う変数・関数
+// グローバルで扱う変数・関数を定義
 export const AuthContext = createContext(
   {} as {
     loading: boolean;
@@ -36,6 +36,7 @@ export const AuthContext = createContext(
     setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>;
     currentUser: User | undefined;
     setCurrentUser: React.Dispatch<React.SetStateAction<User | undefined>>;
+    fetchCurrentUser: () => Promise<void>;
   }
 );
 
@@ -53,23 +54,19 @@ const App: React.FC = () => {
   const handleGetCurrentUser = async () => {
     try {
       const res = await getCurrentUser();
-
       if (res?.data.isLogin === true) {
         setIsSignedIn(true);
         setCurrentUser(res?.data.data);
-
-        console.log(res?.data.data);
       } else {
         console.log("No current user");
       }
     } catch (err) {
       console.log(err);
     }
-
     setLoading(false);
   };
 
-  // ユーザー情報を取得
+  // アプリ起動時にユーザー情報を取得
   useEffect(() => {
     handleGetCurrentUser();
   }, []);
@@ -88,6 +85,7 @@ const App: React.FC = () => {
       // console.log("Fetched todos:", res.data.todos); // デバック用に追加
       if (res?.status === 200) {
         const sortedTodos = res.data.todos.sort((a: Todo, b: Todo) => {
+          // 作成日の降順
           if (a.created_at && b.created_at) {
             return (
               new Date(b.created_at).getTime() -
@@ -115,6 +113,7 @@ const App: React.FC = () => {
       return <></>;
     }
   };
+
   // Todoリストのコンテンツ (TodoForm, TodoList) をまとめたコンポーネント
   const TodoContent = () => (
     <>
@@ -133,6 +132,7 @@ const App: React.FC = () => {
     </>
   );
   // ルーティング (React Router v6) の設定
+
   return (
     <AuthContext.Provider
       value={{
@@ -142,6 +142,8 @@ const App: React.FC = () => {
         setIsSignedIn,
         currentUser,
         setCurrentUser,
+        // AuthContext に fetchCurrentUser を登録
+        fetchCurrentUser: handleGetCurrentUser,
       }}
     >
       <ThemeProvider>
@@ -206,6 +208,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
+
             {isSignedIn && (
               <>
                 <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-blue-600 text-white p-2 shadow-md z-50">
