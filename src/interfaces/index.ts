@@ -1,10 +1,14 @@
 export interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-  dueDate: string;
-  isImportant: boolean;
-  created_at?: string;
+  id: number;                // ID
+  title: string;             // タイトル
+  completed: boolean;        // 完了フラグ
+  dueDate: string;           // 期日
+  isImportant: boolean;      // 重要フラグ
+  created_at?: string;       // 作成日時
+  // updated_at: string;        // 更新日時
+  // description: string;       // 詳細
+  // folder_id: number;         // フォルダID  _はいらない？
+  // user_id: number;           // ユーザーID  _はいらない？
 }
 
 // サインアップ
@@ -34,4 +38,14 @@ export interface User {
   created_at: Date
   updated_at: Date
   avatarUrl?: string;
+}
+
+// フォルダ
+export interface Folder {
+  id: number;
+  name: string;
+  userId: number;
+  created_at: string;
+  updated_at: string;
+  sharedUser?: string; // もしバックエンドで管理していない場合は、フロントエンドのみで管理するならオプショナルに
 }

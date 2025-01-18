@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Todo } from "../interfaces/index";
+import { Folder, Todo } from "../interfaces/index";
 import { updateTodo, deleteTodo } from "../lib/api/todos";
 // import { useTheme } from "../contexts/ThemeContext";　未使用のためコメントアウト
 
@@ -8,6 +8,7 @@ interface TodoListProps {
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   filter: string;
   searchTerm: string;
+  selectedFolder: Folder | null;
 }
 
 export const TodoList: React.FC<TodoListProps> = ({
@@ -15,6 +16,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   setTodos,
   filter,
   searchTerm,
+  selectedFolder,
 }) => {
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -26,9 +28,16 @@ export const TodoList: React.FC<TodoListProps> = ({
 
   // フィルタリング処理
   const applyFilters = useCallback(() => {
-    // console.log("Applying filters:", { filter, searchTerm });
-    // console.log("Original todos:", todos);
+    // console.log("Applying filters:", { filter, searchTerm }); // フィルターの状態をログに出力
+    // console.log("Original todos:", todos); // オリジナルのタスクリストをログに出力
 
+    // フォルダが選択されている場合は一切フィルタしない
+    if (selectedFolder) {
+      setFilteredTodos(todos); // そのまま全部表示（＝「すべてのタスク」扱い）
+      return;
+    }
+
+    // 以下はフォルダ未選択時のみ行うフィルタリング
     let updatedTodos = [...todos]; // オリジナルのタスクリストをコピー
 
     // タスクの状態によってフィルタリングし、更新されたタスクリストをセット・表示

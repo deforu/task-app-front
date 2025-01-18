@@ -34,3 +34,8 @@ export const updateTodo = async (id: number, updatedTodo: Partial<Todo>) => {
     throw err;
   }
 };
+
+// フォルダに属するタスクを作成
+export const createFolderTodo = async (folderId: number, data: Partial<Todo>) => {
+  return client.post(`/folders/${folderId}/todos`, { todo: data });
+};

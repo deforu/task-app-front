@@ -23,13 +23,12 @@ client.interceptors.request.use((config) => {
   const accessToken = Cookies.get("_access_token");
   const clientToken = Cookies.get("_client");
   const uid = Cookies.get("_uid");
-  
 
   if (accessToken && clientToken && uid) {
     config.headers["access-token"] = accessToken;
     config.headers["client"] = clientToken;
     config.headers["uid"] = uid;
-    config.headers["token-type"] = "Bearer"; // 必要に応じて追加
+    config.headers["token-type"] = "Bearer";
   }
 
   return config;

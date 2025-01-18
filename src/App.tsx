@@ -1,4 +1,4 @@
-// App.tsx
+// src/App.tsx
 import React, { useState, useEffect, createContext } from "react";
 import {
   BrowserRouter as Router,
@@ -13,8 +13,17 @@ import Header from "./components/Header";
 import Notifications from "./components/Notifications";
 import Settings from "./components/Settings";
 import Modal from "./components/Modal";
+import FolderForm from "./components/FolderForm"; // フォルダフォームを追加
 
 import { getCurrentUser } from "./lib/api/auth";
+import {
+  getFolders,
+  Folder,
+  createFolder,
+  updateFolder,
+  deleteFolder,
+  getTodosByFolder,
+} from "./lib/api/folders"; // インポート修正
 import { User } from "./interfaces/index";
 
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -50,39 +59,23 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [filter, setFilter] = useState("all");
 
-  // 認証済みのユーザーがいるかどうかチェック
-  const handleGetCurrentUser = async () => {
+  // フォルダ選択時にタスクを取得する関数
+  const fetchTodosByFolder = async (folderId: number) => {
     try {
-      const res = await getCurrentUser();
-      if (res?.data.isLogin === true) {
-        setIsSignedIn(true);
-        setCurrentUser(res?.data.data);
-      } else {
-        console.log("No current user");
-      }
-    } catch (err) {
-      console.log(err);
+      const todos = await getTodosByFolder(folderId); // `todos` 配列を取得
+      console.log("Fetched Todos by Folder:", todos); // デバッグ用ログ
+
+      setTodos(todos); // 正しく配列をセット
+    } catch (error) {
+      console.error("フォルダに紐づくタスクの取得に失敗しました:", error);
+      // 必要に応じてエラーメッセージを表示
     }
-    setLoading(false);
   };
 
-  // アプリ起動時にユーザー情報を取得
-  useEffect(() => {
-    handleGetCurrentUser();
-  }, []);
-
-  // 認証状態が変更されたときにTodoリストを取得
-  useEffect(() => {
-    if (isSignedIn) {
-      handleGetTodos();
-    }
-  }, [isSignedIn]);
-
-  // Todoリストを取得
-  const handleGetTodos = async () => {
+  // 全タスクを取得する関数
+  const fetchAllTodos = async () => {
     try {
       const res = await getTodos();
-      // console.log("Fetched todos:", res.data.todos); // デバック用に追加
       if (res?.status === 200) {
         const sortedTodos = res.data.todos.sort((a: Todo, b: Todo) => {
           // 作成日の降順
@@ -104,6 +97,86 @@ const App: React.FC = () => {
     }
   };
 
+  // フォルダ管理用の状態
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false); // フォルダ作成モーダル
+  const [editFolder, setEditFolder] = useState<Folder | null>(null); // フォルダ編集モーダル
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null); // 選択中のフォルダ
+
+  // 認証済みのユーザーがいるかどうかチェック
+  const handleGetCurrentUser = async () => {
+    try {
+      const res = await getCurrentUser();
+      if (res?.data.isLogin === true) {
+        setIsSignedIn(true);
+        setCurrentUser(res?.data.data);
+      } else {
+        console.log("No current user");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+    setLoading(false);
+  };
+
+  // フォルダ選択時の処理
+  const handleSelectFolder = (folder: Folder | null) => {
+    setSelectedFolder(folder);
+    if (folder) {
+      fetchTodosByFolder(folder.id);
+    } else {
+      fetchAllTodos();
+    }
+  };
+
+  // アプリ起動時にユーザー情報とフォルダ一覧を取得
+  useEffect(() => {
+    const fetchData = async () => {
+      await handleGetCurrentUser();
+      if (isSignedIn) {
+        await fetchFolders();
+        await fetchAllTodos(); // デフォルトで全タスクを取得
+      }
+    };
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignedIn]);
+
+  // フォルダ一覧を取得
+  const fetchFolders = async () => {
+    try {
+      const data = await getFolders();
+      setFolders(data);
+    } catch (error) {
+      console.error("Failed to fetch folders:", error);
+    }
+  };
+
+  // Todoリストを取得
+  // const handleGetTodos = async () => {
+  //   try {
+  //     const res = await getTodos();
+  //     if (res?.status === 200) {
+  //       const sortedTodos = res.data.todos.sort((a: Todo, b: Todo) => {
+  //         // 作成日の降順
+  //         if (a.created_at && b.created_at) {
+  //           return (
+  //             new Date(b.created_at).getTime() -
+  //             new Date(a.created_at).getTime()
+  //           );
+  //         } else {
+  //           return b.id - a.id;
+  //         }
+  //       });
+  //       setTodos(sortedTodos);
+  //     } else {
+  //       console.log(res.data.message);
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
   // ユーザーが認証済みかどうかでルーティングを決定
   // 未認証だった場合は「/signin」ページにリダイレクト
   const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
@@ -118,20 +191,30 @@ const App: React.FC = () => {
   const TodoContent = () => (
     <>
       <div className="hidden md:block">
-        <TodoForm todos={todos} setTodos={setTodos} />
+        <TodoForm
+          todos={todos}
+          setTodos={setTodos}
+          selectedFolder={selectedFolder}
+          filter={filter}
+        />
       </div>
       <TodoList
         todos={todos}
         setTodos={setTodos}
         filter={filter}
         searchTerm={searchTerm}
+        selectedFolder={selectedFolder}
       />
       <div className="md:hidden fixed bottom-10 left-0 right-0 z-40">
-        <TodoForm todos={todos} setTodos={setTodos} />
+        <TodoForm
+          todos={todos}
+          setTodos={setTodos}
+          selectedFolder={selectedFolder}
+          filter={filter}
+        />
       </div>
     </>
   );
-  // ルーティング (React Router v6) の設定
 
   return (
     <AuthContext.Provider
@@ -170,6 +253,11 @@ const App: React.FC = () => {
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
                     setIsMenuOpen={setIsMenuOpen}
+                    folders={folders}
+                    onOpenCreateFolder={() => setIsFolderModalOpen(true)}
+                    onOpenEditFolder={(folder) => setEditFolder(folder)}
+                    onSelectFolder={handleSelectFolder}
+                    selectedFolder={selectedFolder}
                   />
                 </div>
               )}
@@ -232,11 +320,84 @@ const App: React.FC = () => {
                     </ul>
                   </nav>
                 </footer>
+
+                {/* 設定用モーダル */}
                 <Modal
                   isOpen={isSettingsOpen}
                   onClose={() => setIsSettingsOpen(false)}
+                  title="設定"
                 >
                   <Settings />
+                </Modal>
+
+                {/* フォルダ作成モーダル */}
+                <Modal
+                  isOpen={isFolderModalOpen}
+                  onClose={() => setIsFolderModalOpen(false)}
+                  title="フォルダを作成"
+                >
+                  <FolderForm
+                    onSubmit={async (name, sharedUser) => {
+                      try {
+                        const newFolder = await createFolder(name);
+                        setFolders([...folders, newFolder]);
+                        setIsFolderModalOpen(false);
+                      } catch (error) {
+                        console.error("Failed to create folder:", error);
+                        // 必要に応じてエラーメッセージを表示
+                      }
+                    }}
+                  />
+                </Modal>
+
+                {/* フォルダ編集モーダル */}
+                <Modal
+                  isOpen={!!editFolder}
+                  onClose={() => setEditFolder(null)}
+                  title="フォルダを編集"
+                >
+                  {editFolder && (
+                    <FolderForm
+                      defaultName={editFolder.name}
+                      defaultSharedUser={editFolder.sharedUser}
+                      isEditing
+                      onSubmit={async (name, sharedUser) => {
+                        try {
+                          const updatedFolder = await updateFolder(
+                            editFolder.id,
+                            name
+                          );
+                          setFolders(
+                            folders.map((folder) =>
+                              folder.id === updatedFolder.id
+                                ? updatedFolder
+                                : folder
+                            )
+                          );
+                          setEditFolder(null);
+                        } catch (error) {
+                          console.error("Failed to update folder:", error);
+                          // 必要に応じてエラーメッセージを表示
+                        }
+                      }}
+                      onDelete={async () => {
+                        if (editFolder) {
+                          try {
+                            await deleteFolder(editFolder.id);
+                            setFolders(
+                              folders.filter(
+                                (folder) => folder.id !== editFolder.id
+                              )
+                            );
+                            setEditFolder(null);
+                          } catch (error) {
+                            console.error("Failed to delete folder:", error);
+                            // 必要に応じてエラーメッセージを表示
+                          }
+                        }
+                      }}
+                    />
+                  )}
                 </Modal>
               </>
             )}

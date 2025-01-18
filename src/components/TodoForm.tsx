@@ -1,16 +1,23 @@
 // TodoForm.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { createTodo } from "../lib/api/todos";
-import { Todo } from "../interfaces/index";
+import { createFolderTodo, createTodo } from "../lib/api/todos";
+import { Folder, Todo } from "../interfaces/index";
 import { useTheme } from "../contexts/ThemeContext";
 
 interface TodoFormProps {
   todos: Todo[];
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+  selectedFolder: Folder | null; // 選択中のフォルダ情報を受け取る
+  filter: string; // フィルタリング用の状態を受け取る
 }
 
 // TodoFormコンポーネント
-export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
+export const TodoForm: React.FC<TodoFormProps> = ({
+  todos,
+  setTodos,
+  selectedFolder,
+  filter,
+}) => {
   const [title, setTitle] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
   const [isImportant, setIsImportant] = useState<boolean>(false);
@@ -28,24 +35,46 @@ export const TodoForm: React.FC<TodoFormProps> = ({ todos, setTodos }) => {
   const handleCreateTodo = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!title.trim()) return;
+
+    // フィルタに基づき、isImportant や folderId を自動設定
+    let importantFlag = isImportant;
+    if (!selectedFolder) {
+      // フォルダ未選択の場合のみ filter=important を反映
+      if (filter === "important") {
+        importantFlag = true;
+      }
+      // filter=all の場合は isImportant = false のまま
+    }
+
     // タイトルが空の場合は処理を中断 (trim() で前後の空白を削除) ここでタイトル、日付、重要度、完了状態を設定している
     const data = {
       title: title.trim(),
       completed: false,
       dueDate: dueDate,
-      isImportant: isImportant,
+      isImportant: importantFlag,
+      // folderId はサーバー上で folder_id に変換して使う想定
     };
 
     try {
-      const res = await createTodo(data);
-      if (res.status === 200) {
-        setTodos([res.data.todo, ...todos]); // 新しいTodoを配列の先頭に追加
-        setTitle(""); // タイトル入力をクリア
-        setIsImportant(false); // 重要フラグをリセット
-        // 日付はリセットせず、今日の日付のままにする
+      let res;
+      if (selectedFolder) {
+        // フォルダが選択されていれば /folders/:folderId/todos にPOST
+        res = await createFolderTodo(selectedFolder.id, data);
       } else {
-        console.error(res.data.message);
-        console.error(res.data.errors);
+        // フォルダ未選択なら /todos にPOST
+        res = await createTodo(data);
+      }
+
+      if (res.status === 200 || res.status === 201) {
+        // APIが返すレスポンス構造によって変更
+        const newTodo = res.data.todo || res.data;
+        setTodos([newTodo, ...todos]);
+        setTitle("");
+        setIsImportant(false);
+        // 日付はリセットせず、todayのまま
+      } else {
+        console.error(res.data.message || "タスク作成に失敗");
       }
     } catch (err) {
       console.error("Todoの作成中にエラーが発生しました:", err);

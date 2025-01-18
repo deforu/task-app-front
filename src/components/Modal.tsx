@@ -7,11 +7,13 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  title?: string;
 }
 
 // Modalコンポーネント
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null;
+
   // モーダルの表示
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-black bg-opacity-50">
@@ -19,7 +21,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
         <div className="relative flex flex-col w-full bg-light-input dark:bg-dark-header border border-light-card dark:border-dark-card rounded-lg shadow-lg outline-none focus:outline-none">
           <div className="flex items-start justify-between p-5 border-b border-light-card dark:border-dark-card rounded-t">
             <h3 className="text-2xl font-semibold text-light-text dark:text-dark-text">
-              設定
+              {title ?? "設定"}
             </h3>
             <button
               className="p-1 ml-auto bg-transparent border-0 text-light-text dark:text-dark-text float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
