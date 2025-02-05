@@ -1,7 +1,7 @@
 
 <div id="top"></div>
 
-# Task App Frontend
+# Task App Front
 
 ## 使用技術一覧
 
@@ -30,11 +30,9 @@
 
 ## プロジェクトについて
 
-Task App Frontendは、React + TypeScript を使用したタスク管理アプリのフロントエンドです。  
+Task App Frontは、React + TypeScript を使用したタスク管理アプリのフロントエンドです。  
 ユーザーはタスクをフォルダごとに整理・管理できます。  
 本プロジェクトは、バックエンドの Rails API と連携して動作します。
-
-<p align="right">(<a href="#top">トップへ</a>)</p>
 
 ---
 
@@ -47,7 +45,35 @@ Task App Frontendは、React + TypeScript を使用したタスク管理アプ�
 
 ⚠ 注意: フロントエンド単体では動作しません。バックエンドAPIを利用する必要があります。
 
-<p align="right">(<a href="#top">トップへ</a>)</p>
+バックエンドのリポジトリ：  [task-app-back](https://github.com/deforu/task-app-back) 
+
+## 使い方（デモ環境）
+
+本プロジェクトは、Vercel にデプロイされたフロントエンドと、Render にデプロイされたバックエンドを利用しています。  
+初回アクセス時には、以下の点に注意してください。
+
+### **1. ユーザー登録が必要**
+- 初めて利用する場合は、**サインアップ（ユーザー登録）** を行ってください。
+- **⚠ 注意：登録時には普段使用しているメールアドレスを入力しないでください。**
+  - デモ環境ではメールの送受信機能は使用しないため、  
+    `test@example.com` のような**テスト用のメールアドレス**を使用してください。
+  - **例:**  
+    ✅ `test@example.com`  
+    ✅ `user123@demo.com`  
+    ❌ `yourpersonal@gmail.com`（個人アドレスは使用しない）
+
+### **2. データベースが動き出すまで時間がかかる**
+- Render の無料プランを使用しているため、バックエンドのデータベースが **スリープ状態** の場合があります。
+- ユーザー登録後、数十秒待つとバックエンドが起動し、データが正しく保存されるようになります。
+
+### **3. しばらく待てばTodoリストが正常に動作**
+- ユーザー登録後、**Todoリストの追加・編集・削除** が可能になります。
+- 初回起動時に動作が遅い場合は **リロード** してみてください。
+
+#### **💡 問題が発生した場合**
+- 「タスクが追加されない」「ログインしても動作しない」場合は、数十秒待ってから再試行してください。
+- それでも動作しない場合は、ブラウザのキャッシュをクリアして再読み込みしてください。
+
 
 ---
 
@@ -55,14 +81,14 @@ Task App Frontendは、React + TypeScript を使用したタスク管理アプ�
 
 | 技術                | バージョン |
 |---------------------|----------|
-| React              | 18.x     |
-| TypeScript         | 4.x      |
-| Tailwind CSS       | 3.x      |
-| React Router       | 6.x      |
-| Axios              | 0.x      |
-| Vite               | 4.x      |
+| React              | 18.3.1   |
+| TypeScript         | 4.4.2    |
+| Create React App   | 5.0.1    |
+| React Router       | 6.26.2   |
+| Axios              | 1.7.7    |
+| Material-UI        | 4.12.4   |
+| Tailwind CSS       | 3.4.9    |
 
-<p align="right">(<a href="#top">トップへ</a>)</p>
 
 ---
 
@@ -71,23 +97,51 @@ Task App Frontendは、React + TypeScript を使用したタスク管理アプ�
 ```
 task-app-front/
 ├── public/
-│   ├── index.html
 │   ├── favicon.ico
+│   ├── index.html
+│   ├── logo192.png
+│   ├── logo512.png
+│   ├── manifest.json
+│   └── robots.txt
 ├── src/
-│   ├── components/        # UIコンポーネント
-│   │   ├── layouts/      # 共通レイアウト
-│   │   ├── pages/        # 各ページ
-│   │   ├── utils/        # ユーティリティ関数
-│   ├── contexts/         # 状態管理用のContext
-│   ├── lib/api/          # API通信関連
-│   ├── App.tsx
-│   ├── index.tsx
+│   ├── components/
+│   │   ├── layouts/
+│   │   │   ├── CommonLayout.tsx        // アプリ全体で共通のレイアウトを提供
+│   │   │   └── Header.tsx              // ユーザー認証状態に応じたナビゲーションボタン
+│   │   ├── pages/
+│   │   │   ├── Home.tsx                 // サインイン後に表示されるホームページ
+│   │   │   ├── SignIn.tsx               // 既存アカウントへのサインインページ
+│   │   │   └── SignUp.tsx               // 新規アカウント作成のサインアップページ
+│   │   └── utils/
+│   │       └── AlertMessage.tsx         // アラートメッセージ表示ユーティリティ
+│   ├── Header.js                         // ヘッダー構成。タイトル、メニュートグル、ナビゲーションメニュー
+│   ├── Modal.tsx                         // モーダルウィンドウ表示コンポーネント
+│   ├── Notifications.tsx                 // お知らせセクション表示コンポーネント
+│   ├── Profile.tsx                       // ユーザー名とプロフィール画像の管理・保存
+│   ├── Settings.tsx                      // 個人設定管理コンポーネント（テーマ、フォントサイズ、通知設定など）
+│   ├── Sidebar.js                        // サイドバーコンポーネント（タスクのフィルタリング、検索機能）
+│   ├── TodoForm.tsx                      // 新規タスク作成フォーム
+│   ├── TodoItem.tsx                      // 各Todoアイテムの表示・編集・削除機能
+│   ├── TodoList.tsx                      // タスクリスト表示・フィルタリング・検索・編集機能
+│   ├── contexts/
+│   │   └── ThemeContext.tsx              // テーマとフォントサイズの管理
+│   ├── interfaces/
+│   │   └── index.ts                      // TypeScriptインターフェース定義
+│   ├── lib/
+│   │   └── api/
+│   │       ├── auth.ts                    // 認証関連API通信
+│   │       ├── client.ts                  // Axiosインスタンス設定
+│   │       └── todos.ts                   // Todo関連API通信
+│   ├── App.tsx                            // メインアプリケーションコンポーネント
+│   ├── index.css                          // グローバルスタイル
+│   ├── index.tsx                          // Reactアプリケーションのエントリーポイント
+│   └── react-app-env.d.ts                 // TypeScript環境定義
+├── .gitignore
 ├── package.json
+├── README.md
 ├── tsconfig.json
 └── yarn.lock
 ```
-
-<p align="right">(<a href="#top">トップへ</a>)</p>
 
 ---
 
@@ -114,8 +168,6 @@ task-app-front/
    yarn dev
    ```
 
-<p align="right">(<a href="#top">トップへ</a>)</p>
-
 ---
 
 ## API連携
@@ -127,27 +179,32 @@ task-app-front/
 
 | メソッド | エンドポイント | 説明 |
 |----------|---------------------------|----------------|
-| `POST`   | `/auth/sign_in`            | ログイン |
-| `POST`   | `/auth/sign_up`            | ユーザー登録 |
-| `DELETE` | `/auth/sign_out`           | ログアウト |
-| `GET`    | `/auth/sessions`           | ログイン状態確認 |
+| `POST`   | `/api/v1/auth/sign_in`            | ログイン |
+| `POST`   | `/api/v1/auth/sign_up`            | ユーザー登録 |
+| `DELETE` | `/api/v1/auth/sign_out`           | ログアウト |
+| `GET`    | `/api/v1/auth/sessions`           | ログイン状態確認 |
 
 ### タスク管理
 
 | メソッド | エンドポイント | 説明 |
 |----------|----------------------|----------------------------|
-| `GET`    | `/todos`             | タスク一覧取得 |
-| `POST`   | `/todos`             | タスク作成 |
-| `PATCH`  | `/todos/:id`         | タスク更新 |
-| `DELETE` | `/todos/:id`         | タスク削除 |
+| `GET`    | `/api/v1/todos`             | タスク一覧取得 |
+| `POST`   | `/api/v1/todos`             | タスク作成 |
+| `PATCH`  | `/api/v1/todos/:id`         | タスク更新 |
+| `DELETE` | `/api/v1/todos/:id`         | タスク削除 |
+| `GET` | `/api/v1/todos/important` | 重要なタスクの取得 |
+| `GET` | `/api/v1/todos/today` | 今日のタスクの取得 |
+| `GET` | `/api/v1/todos/completed` | 完了済みタスクの取得 |
 
 ### フォルダ管理
 
 | メソッド | エンドポイント | 説明 |
 |----------|-----------------------|----------------|
-| `GET`    | `/folders`            | フォルダ一覧取得 |
-| `POST`   | `/folders`            | フォルダ作成 |
-| `PATCH`  | `/folders/:id`        | フォルダ更新 |
-| `DELETE` | `/folders/:id`        | フォルダ削除 |
+| `GET`    | `/api/v1/folders`            | フォルダ一覧取得 |
+| `POST`   | `/api/v1/folders`            | フォルダ作成 |
+| `PATCH`  | `/api/v1/folders/:id`        | フォルダ更新 |
+| `DELETE` | `/api/v1/folders/:id`        | フォルダ削除 |
+| `GET` | `/api/v1/folders/:folder_id/todos` | 特定フォルダのタスク一覧 |
+| `POST` | `/api/v1/folders/:folder_id/todos` | 特定フォルダにタスク作成 |
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
